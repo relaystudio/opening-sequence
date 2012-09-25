@@ -1,0 +1,51 @@
+<add100Faces>
+    <val_0>0</val_0>
+</add100Faces>
+<debug>
+    <val_0>1</val_0>
+</debug>
+<scaleWindow>
+    <val_0>0.325611</val_0>
+</scaleWindow>
+<scaleTop>
+    <val_0>1</val_0>
+</scaleTop>
+<scaleBottom>
+    <val_0>1</val_0>
+</scaleBottom>
+<faceScale>
+    <val_0>0.414167</val_0>
+</faceScale>
+<scaleFactor>
+    <val_0>1.06</val_0>
+</scaleFactor>
+<minNeighbors>
+    <val_0>1</val_0>
+</minNeighbors>
+<minSize>
+    <val_0>0</val_0>
+</minSize>
+<maxSize>
+    <val_0>100</val_0>
+</maxSize>
+<circleResolution>
+    <val_0>64</val_0>
+</circleResolution>
+<simplifyPolyline>
+    <val_0>1</val_0>
+</simplifyPolyline>
+<makeInactive>
+    <val_0>30</val_0>
+</makeInactive>
+<faceDetectSmothing>
+    <val_0>64</val_0>
+</faceDetectSmothing>
+<distanceThresh>
+    <val_0>15</val_0>
+</distanceThresh>
+<panX>
+    <val_0>0</val_0>
+</panX>
+<panY>
+    <val_0>0</val_0>
+</panY>
