@@ -4,15 +4,19 @@
 #include "ofMain.h"
 #include "user.h"
 
+#define FBO_NUM 2
+
 class Scene {
-    
+
 public:
     
     Scene();
     ~Scene();
     
+    void load(string _path); // Video
+    
     ofShader shader;
-    ofFbo fbo[3];
+    ofFbo fbo[FBO_NUM];
     vector<Layer*> layers;
     
     bool bActive;

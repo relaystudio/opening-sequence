@@ -5,5 +5,18 @@ OF_PATH = ../../openFrameworks
 //THIS HAS ALL THE HEADER AND LIBS FOR OF CORE
 #include "../../openFrameworks/libs/openFrameworksCompiled/project/osx/CoreOF.xcconfig"
 
-OTHER_LDFLAGS = $(OF_CORE_LIBS) 
-HEADER_SEARCH_PATHS = $(OF_CORE_HEADERS) "../../openFrameworks/addons/ofxOpenCv/libs/opencv/include/" "../../ofxCv/libs/ofxCv/include/" "../../openFrameworks/addons/ofxDirList"
+ADDONS_PATH = $(OF_PATH)/addons
+// For my own file structure. Src is above of, addons is within
+SRC_PATH = $(OF_PATH)/..
+OFX_CV_HEADERS = "$(ADDONS_PATH)/ofxOpenCv/libs/opencv/include/" "$(SRC_PATH)/ofxCv/libs/ofxCv/include/" "$(ADDONS-PATH)/ofxDirList"
+
+// ofxKinect
+OFX_KINECT_HEADERS = "$(ADDONS_PATH)/ofxKinect/libs/libusb/osx/include/"
+OFX_KINECT_LIBS = "$(ADDONS_PATH)/ofxKinect/libs/libusb/osx/libs/usb-1.0.a"
+
+// all addons
+OF_ADDON_HEADERS = $(OFX_KINECT_HEADERS) $(OFX_CV_HEADERS)
+OF_ADDON_LIBS = $(OFX_KINECT_LIBS)
+
+OTHER_LDFLAGS = $(OF_CORE_LIBS) $(OF_ADDON_LIBS)
+HEADER_SEARCH_PATHS = $(OF_CORE_HEADERS) $(OF_ADDON_HEADERS)

@@ -36,11 +36,12 @@ public:
     void configure();
     void updateConditional();
     void setDebug(bool _debug);
-    
-    void saveHomography();
-    bool loadHomography( string * path );
-    void updateHomography();
 
+    // Scene related
+    void updateActiveScene();
+    void transitionScene();
+    ofPolyline getContour(ofxCv::ContourFinder * _contourFinder);
+    
     // Setup declarations
     void setupPanel();
     void updatePanel();
@@ -59,21 +60,25 @@ public:
     
     //Camera
     ofxKinect kinect;
-    ofxKinect * cam;
     ofImage depthImg;
+    ofxKinect * kinectPtr;
     float angle; // kinect angle across both
 #ifdef USE_TWO_KINECTS
     ofxKinect kinect2;
+    ofxKinect * kinect2Ptr;
 #endif
     ofTexture stitchKinect(ofxKinect * _k1, ofxKinect * _k2);
-    ofTexture stitched;
+    ofFbo stitchedImage;
+    ofImage stitched;
+    ofVideoGrabber sanityTest;
     cv::Mat stitchedKinect;
+    ofImage smallKinect;
+    void cvClamp(cv::Mat& mat, float lowerBound, float upperBound);
+    
     ofxCv::ContourFinder contourFinder;
     vector<Range> ranges;
     
     ofxCv::RunningBackground background;
-    cv::Mat prevCVFrame;
-    cv::Mat curCVFrame;
     
     // Blobs
     void getScene(cv::Mat * _frame, vector<Range> * _thresh);
@@ -85,17 +90,4 @@ public:
     
 private:
     
-    // Homography state
-    bool loadMap(string * path);
-    void parseMap(ofImage * map);
-    bool saveImage;
-    bool isConfigCanvases;
-    float rotation;    
-    ofVec3f skew;
-    cv::Mat homography;
-    bool isConfigHomograph;
-    bool saveMatrix;
-    bool loadMatrix;
-    bool movingPoint;
-    bool matrixReady;
 };

@@ -11,9 +11,15 @@ public:
     ~Layer();
     
     void update(ofPolyline * _path);
+
+    void loadMesh(string _path);
+    void loadShader(string _path);
+    void loadVideo(string _path);
+    
     void update();
     void draw(int _x, int _y);
     void draw();
+    void drawPath();
     void reset();
     
 private:
@@ -25,5 +31,11 @@ private:
     
     bool bActive; // Active tracking
     bool active; // Facing object
+    
+    ofFbo frame;
+    
+    ofVideoPlayer video;
+    ofShader shader;
+    ofMesh mesh;
 };
 #endif

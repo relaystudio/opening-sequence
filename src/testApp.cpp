@@ -8,18 +8,32 @@ void testApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
         //    ofEnableNormalizedTexCoords(); // May as well be explicit
         //    ofDisableArbTex(); // YEAAA
+    ofDisableLighting();
+    glEnable(GL_TEXTURE_2D);
     setupCamera();
     setupType();
     setupPanel();
    }
 
+void testApp::exit() {
+        // kinect.setCameraTiltAngle(0);
+    kinect.close();
+    kinect.clear();
+#ifdef USE_TWO_KINECTS
+        //    kinect2.setCameraTiltAngle(0);
+    kinect2.close();
+    kinect2.clear();
+#endif
+}
 
 // Update takes in new frame data and passes it to the canvas
 void testApp::update() {
     updateConditional();
     updatePanel();
     updateCamera();
-    for(int i=0;i<numThresh;i++) {
+    updateActiveScene();
+    ranges.clear();
+    for(int i=1;i<numThresh+1;i++) {
         
         Range range = Range();
         range.min = panel.getValueF("range" + ofToString(i) + "min");
@@ -30,21 +44,58 @@ void testApp::update() {
     getScene(&stitchedKinect,&ranges);
 }
 
+void testApp::cvClamp(Mat & mat, float lowerBound, float upperBound) {
+    Mat upperThresh = mat;
+    Mat lowerThresh = mat;
+    
+    ofxCv::threshold(upperThresh,upperBound,true);
+    ofxCv::threshold(lowerThresh,lowerBound,false);
+    cvAnd(&upperThresh, &lowerThresh, &mat);
+}
+
 void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     //0 = partial foreground
     //1 = primary focus
     //2 = background
     //3 = far background
     vector<ofPolyline> contours;
+//    blur(stitched, 10);
+//    if(!kinect.isConnected()) convertColor(stitched,stitchedKinect,CV_RGB2GRAY);
+//    Mat stitchedMat = toCv(stitched);
+//    for(int i=0;i<_thresh->size();i++) {
+//        Mat stitchedMatCopy = stitchedMat.clone();
+//        cvClamp(stitchedMat,_thresh->at(i).min, _thresh->at(i).max);
+//        resize(stitchedMat,smallKinect);
+//        contourFinder.setThreshold(127);
+//        contourFinder.findContours(smallKinect);
+//        contours.push_back(getContour(&contourFinder));
+//    }
     
-    for(int i=0;i<_thresh->size();i++) {
-            //contourFinder.setThreshold( th );
-            //contourFinder.findContours(cam);
-    }
     
     for(int i=0;i<contours.size();i++) {
         layer[i]->update(&contours[i]);
+        
     }   
+}
+
+ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
+    ofPolyline poly;
+    
+    ofLog() << "Number of polylines: " << ofToString(contourFinder.size());
+    
+    if(_contourFinder->size() != 0 ) {
+        vector<ofPolyline> polylines;
+        polylines = _contourFinder->getPolylines();
+        for(int i=0; i<polylines.size(); i++) {
+            ofLog() << "Polyline" << ofToString(i) << " has " << ofToString(polylines[i].size());
+            if(i==0) poly = polylines[i];
+            if(polylines[i].size() >= poly.size()) poly = polylines[i];
+        }
+        ofLog() << "Found contours: " << ofToString(poly.size());
+    } 
+    poly.simplify(.3);    
+    poly.close();    
+    return poly;
 }
 
 
@@ -53,28 +104,16 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
  *******************************************/
 
 void testApp::draw() {
-    ofBackground(100, 100, 100);
-    ofPushMatrix();
-        ofScale(panel.getValueF("scaleWindow"),panel.getValueF("scaleWindow"));
-    if(flipv) {
-        ofRotate(180, 1,0,0);
-    }
-    if(fliph) {
-        ofRotate(180,0,1,0);
-    }
+    ofBackground(70, 70, 70);
+    ofSetColor(255,255,255);   
 
-    ofPopMatrix();
+        //    kinectPtr->drawDepth(0,0,kinect.width,kinect.height);
+        //        depthImg.draw(0,0);
+        //        kinect2Ptr->drawDepth(kinect.width,0,kinect2.width,kinect2.height);
+                stitched.draw(0,depthImg.height);
+            sanityTest.draw(0,0);
+
     
-    if(debug) {
-        ofPushMatrix();
-            kinect.drawDepth(0,0,kinect.width,kinect.height);
-#ifdef USE_TWO_KINECTS
-            kinect2.drawDepth(kinect.width,0,kinect2.width,kinect2.height);
-#endif
-        stitched.draw(0,depthImg.height);
-        ofPopMatrix();
-    }
-       
     GLboolean isDepthTesting;
     glGetBooleanv(GL_DEPTH_TEST, &isDepthTesting);
     if(isDepthTesting == GL_TRUE)
@@ -96,32 +135,7 @@ void testApp::keyPressed(int key) {
 /******************************************
  Homographic transforms + img change
  *******************************************/
-void testApp::updateHomography() {
-    
-}
 
-void testApp::saveHomography() {
-    
-}
-
-bool testApp::loadHomography( string * path) {
-    return false;
-}
-
-
-bool testApp::loadMap(string * path) {
-    ofFile previous(*path);
-    if(previous.exists()) {
-        FileStorage fs(ofToDataPath(*path), FileStorage::READ);
-        fs[*path] >> homography;
-        matrixReady = true;
-    }
-    return false;
-}
-
-void testApp::parseMap(ofImage * map) {
-    
-}
 
 /******************************************
  Various setup functions 
@@ -190,7 +204,7 @@ void testApp::updatePanel() {
             kinect2.setCameraTiltAngle(angle);
     }
     
-    for(int i=0;i<panel.getValueI("NumRanges");i++) {
+    for(int i=1;i<panel.getValueI("NumRanges")+1;i++) {
         if(panel.getValueI("range" + ofToString(i) + "min")) {
             panel.addSlider("range" + ofToString(i) + "min", 0,1.0,false);
             panel.addSlider("range" + ofToString(i) + "max", 0,1.0,false);
@@ -205,51 +219,79 @@ void testApp::setupType() {
     raleway.setLetterSpacing(1.037);
 }
 
+
+/******************************************
+    Various Camera functions 
+ *******************************************/
 void testApp::setupCamera() {
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofSetVerticalSync(true);
     
     angle = 0;
-    
+    sanityTest.initGrabber(640,480);
     kinect.setRegistration(true);
-    kinect.init(false, false, true); // infrared=false, video=true, texture=true)
+    ofLog() << "Starting first kinect";
+    kinect.init(false, false, true); // infrared=false, video=true, texture=true
     kinect.open(0);
     kinect.setCameraTiltAngle(angle);
-    
-    cam = &kinect;
+    kinectPtr = &kinect;
     depthImg.allocate(kinect.width, kinect.height,OF_IMAGE_GRAYSCALE);
 #ifdef USE_TWO_KINECTS
     ofLog() << "Starting second kinect";
     kinect2.setRegistration(true);
     kinect2.init(false, false, true);
     kinect2.open(1);
+    kinect2Ptr = &kinect2;
     kinect2.setCameraTiltAngle(angle);
 #endif
+    stitched.allocate(kinect.width+kinect2.width, kinect.height, OF_IMAGE_GRAYSCALE);
+    smallKinect.allocate((kinect.width+kinect2.width) /4, kinect.height / 4, OF_IMAGE_GRAYSCALE);
+                            
 }
 
 void testApp::updateCamera() {
+    sanityTest.update();
     kinect.update();
+    depthImg.setFromPixels(kinectPtr->getDepthPixels(), kinect.width, kinect.height,OF_IMAGE_GRAYSCALE);
 #ifdef USE_TWO_KINECTS
     kinect2.update();
     if(kinect.isFrameNew()) {
-            //if(kinect2.isFrameNew()) {
-            //depthImg.setFromPixels(kinect.getDepthPixels(),kinect.width, kinect.height, OF_IMAGE_GRAYSCALE,true);
-            stitched = stitchKinect(&kinect,&kinect2);
-                //stitched.update();
-                //}
+        stitchKinect(&kinect,&kinect2).readToPixels(stitched);
+        stitched.update();
+        //ofLog() << "Dist from center:" << ofToString(kinect.getColorAt(kinect.width/2,kinect.height/2));
     }
 #endif
+    
+    // In case of no kinects, break glass
+    if(!kinect.isConnected() && !kinect2.isConnected()) {
+        stitchedImage.allocate(
+                               sanityTest.getWidth()*2,
+                               sanityTest.getHeight()
+                                   );
+        
+        stitchedImage.begin();
+            ofSetColor(255,255,255); 
+            ofPushMatrix();
+            ofTranslate(0,0);   sanityTest.draw(0,0);
+            ofTranslate(sanityTest.getWidth(),0);   sanityTest.draw(0,0);
+            ofPopMatrix();
+        stitchedImage.end();
+        stitchedImage.getTextureReference().readToPixels(stitched);
+        stitched.update();
+    }
 }
 
 ofTexture testApp::stitchKinect(ofxKinect * _k1, ofxKinect * _k2) {
-    ofFbo stitchedImage;
+    if(!stitchedImage.isAllocated()) {
     stitchedImage.allocate(
                            _k1->width+_k2->width
                            , _k1->height
-                           );
+                           , GL_RGBA, 1);
+    }
+    
     stitchedImage.begin();
         ofPushMatrix();
-
+            ofSetColor(255,255,255); 
             ofTranslate(0,0);
             _k1->drawDepth(0,0);
 
@@ -258,6 +300,7 @@ ofTexture testApp::stitchKinect(ofxKinect * _k1, ofxKinect * _k2) {
 
         ofPopMatrix();
     stitchedImage.end();
+    
     return stitchedImage.getTextureReference();
 }
 
@@ -265,9 +308,14 @@ void testApp::setDebug(bool _debug) {
     debug = _debug;
 }
 
-void testApp::exit() {
-    kinect.close();
-#ifdef USE_TWO_KINECT
-    kinect2.close();
-#endif
+/******************************************
+ Scene management functions 
+ *******************************************/
+
+void testApp::updateActiveScene() {
+    
+}
+
+void testApp::transitionScene() {
+    
 }

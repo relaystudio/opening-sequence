@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		831637B516109B1000D2B27C /* shader1.frag in Sources */ = {isa = PBXBuildFile; fileRef = 831637B316109B1000D2B27C /* shader1.frag */; };
-		831637B616109B1000D2B27C /* shader1.vert in Sources */ = {isa = PBXBuildFile; fileRef = 831637B416109B1000D2B27C /* shader1.vert */; };
 		831637BB16109E6800D2B27C /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 831637B716109E6800D2B27C /* scene.cpp */; };
 		831637BC16109E6800D2B27C /* user.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 831637B916109E6800D2B27C /* user.cpp */; };
 		831637FC16109EF500D2B27C /* guiBaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 831637C116109EF500D2B27C /* guiBaseObject.cpp */; };
@@ -110,8 +108,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		831637B316109B1000D2B27C /* shader1.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = shader1.frag; sourceTree = "<group>"; };
-		831637B416109B1000D2B27C /* shader1.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = shader1.vert; sourceTree = "<group>"; };
 		831637B716109E6800D2B27C /* scene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scene.cpp; sourceTree = "<group>"; };
 		831637B816109E6800D2B27C /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scene.h; sourceTree = "<group>"; };
 		831637B916109E6800D2B27C /* user.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = user.cpp; sourceTree = "<group>"; };
@@ -177,6 +173,7 @@
 		831637F916109EF500D2B27C /* simpleFileLister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simpleFileLister.h; sourceTree = "<group>"; };
 		831637FA16109EF500D2B27C /* simpleLogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = simpleLogger.cpp; sourceTree = "<group>"; };
 		831637FB16109EF500D2B27C /* simpleLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simpleLogger.h; sourceTree = "<group>"; };
+		837FE5AB161B8724006E2B19 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.md; sourceTree = "<group>"; };
 		839B3B2C157D247900D3335A /* Calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Calibration.h; sourceTree = "<group>"; };
 		839B3B2D157D247900D3335A /* ContourFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContourFinder.h; sourceTree = "<group>"; };
 		839B3B2E157D247900D3335A /* Distance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Distance.h; sourceTree = "<group>"; };
@@ -642,8 +639,6 @@
 		83EFA24815C6CF800008E6EF /* data */ = {
 			isa = PBXGroup;
 			children = (
-				831637B316109B1000D2B27C /* shader1.frag */,
-				831637B416109B1000D2B27C /* shader1.vert */,
 				83EFA24C15C6CF810008E6EF /* Raleway-Thin.ttf */,
 				83EFA24D15C6CF810008E6EF /* settings.xml */,
 			);
@@ -711,6 +706,7 @@
 			children = (
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
+				837FE5AB161B8724006E2B19 /* readme.md */,
 				83EFA24815C6CF800008E6EF /* data */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
 				E4EEC9E9138DF44700A80321 /* openFrameworks */,
@@ -842,8 +838,6 @@
 				839B3CD4157D3C5E00D3335A /* tinyxmlerror.cpp in Sources */,
 				839B3CD5157D3C5E00D3335A /* tinyxmlparser.cpp in Sources */,
 				839B3CD6157D3C5E00D3335A /* ofxXmlSettings.cpp in Sources */,
-				831637B516109B1000D2B27C /* shader1.frag in Sources */,
-				831637B616109B1000D2B27C /* shader1.vert in Sources */,
 				831637BB16109E6800D2B27C /* scene.cpp in Sources */,
 				831637BC16109E6800D2B27C /* user.cpp in Sources */,
 				831637FC16109EF500D2B27C /* guiBaseObject.cpp in Sources */,
@@ -919,7 +913,7 @@
 					"-lpthread",
 					"-mtune=native",
 				);
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx10.7;
 			};
 			name = Debug;
 		};
@@ -950,7 +944,7 @@
 					"-lpthread",
 					"-mtune=native",
 				);
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx10.7;
 			};
 			name = Release;
 		};
@@ -1051,7 +1045,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_7 = "\"$(SRCROOT)/../../openFrameworks/addons/ofxKinect/libs/libusb/osx/libs\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx10.7;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1152,7 +1146,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_7 = "\"$(SRCROOT)/../../openFrameworks/addons/ofxKinect/libs/libusb/osx/libs\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx10.7;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
