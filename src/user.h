@@ -9,13 +9,12 @@ public:
     
     Layer();
     ~Layer();
-    
-    void update(ofPolyline * _path);
 
     void loadMesh(string _path);
     void loadShader(string _path);
     void loadVideo(string _path);
     
+    void updateLayer(ofPolyline * _path);
     void update();
     void draw(int _x, int _y);
     void draw();

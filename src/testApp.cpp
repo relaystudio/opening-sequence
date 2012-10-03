@@ -41,6 +41,14 @@ void testApp::update() {
         ranges.push_back(range);
 
     }
+    // Init layers
+    if(layer.empty()) {
+        ofLog() << "Populating Layers";
+        for(int i=0;i<numThresh;i++) {
+        layer.push_back(new Layer());
+        }
+    }
+    
     getScene(&stitchedKinect,&ranges);
 }
 
@@ -59,41 +67,46 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     //2 = background
     //3 = far background
     vector<ofPolyline> contours;
-//    blur(stitched, 10);
-//    if(!kinect.isConnected()) convertColor(stitched,stitchedKinect,CV_RGB2GRAY);
-//    Mat stitchedMat = toCv(stitched);
-//    for(int i=0;i<_thresh->size();i++) {
+    blur(stitched, 10);
+        //if(!kinect.isConnected()) convertColor(stitched,stitchedKinect,CV_RGB2GRAY);
+        //    Mat stitchedMat = toCv(stitched);
+    for(int i=0;i<_thresh->size();i++) {
 //        Mat stitchedMatCopy = stitchedMat.clone();
 //        cvClamp(stitchedMat,_thresh->at(i).min, _thresh->at(i).max);
 //        resize(stitchedMat,smallKinect);
-//        contourFinder.setThreshold(127);
-//        contourFinder.findContours(smallKinect);
-//        contours.push_back(getContour(&contourFinder));
-//    }
+//      contourFinder.setThreshold(127);
+        contourFinder.findContours(stitched);
+        ofPolyline theShape = getContour(&contourFinder);
+        contours.push_back(theShape);
+    }
     
+    for(int i=0;i<numThresh;i++) {
+        if(contours.size() >= i)
+            layer[i]->updateLayer(&contours[i]);
+    }
     
-    for(int i=0;i<contours.size();i++) {
-        layer[i]->update(&contours[i]);
-        
-    }   
+//    for(int i=0;i<contours.size();i++) {
+//        layer[i]->updateLayer(&contours[i]);
+//        
+//    }   
 }
 
 ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
     ofPolyline poly;
     
-    ofLog() << "Number of polylines: " << ofToString(contourFinder.size());
+        //ofLog() << "Number of polylines: " << ofToString(contourFinder.size());
     
     if(_contourFinder->size() != 0 ) {
         vector<ofPolyline> polylines;
         polylines = _contourFinder->getPolylines();
         for(int i=0; i<polylines.size(); i++) {
-            ofLog() << "Polyline" << ofToString(i) << " has " << ofToString(polylines[i].size());
+                //   ofLog() << "Polyline" << ofToString(i) << " has " << ofToString(polylines[i].size());
             if(i==0) poly = polylines[i];
             if(polylines[i].size() >= poly.size()) poly = polylines[i];
         }
         ofLog() << "Found contours: " << ofToString(poly.size());
     } 
-    poly.simplify(.3);    
+        //poly.simplify(.3);    
     poly.close();    
     return poly;
 }
@@ -107,12 +120,17 @@ void testApp::draw() {
     ofBackground(70, 70, 70);
     ofSetColor(255,255,255);   
 
-        //    kinectPtr->drawDepth(0,0,kinect.width,kinect.height);
-        //        depthImg.draw(0,0);
-        //        kinect2Ptr->drawDepth(kinect.width,0,kinect2.width,kinect2.height);
-                stitched.draw(0,depthImg.height);
-            sanityTest.draw(0,0);
+    if(debug) {
+            stitched.draw(0,0);
+        }
 
+    for(int i=0;i<layer.size();i++) {
+        ofSetColor(255,0,0); 
+        glEnable(GL_DEPTH_TEST);
+        layer[i]->drawPath();
+        glDisable(GL_DEPTH_TEST);
+        
+    }   
     
     GLboolean isDepthTesting;
     glGetBooleanv(GL_DEPTH_TEST, &isDepthTesting);
@@ -264,10 +282,12 @@ void testApp::updateCamera() {
     
     // In case of no kinects, break glass
     if(!kinect.isConnected() && !kinect2.isConnected()) {
+        if(!stitchedImage.isAllocated()) {
         stitchedImage.allocate(
                                sanityTest.getWidth()*2,
                                sanityTest.getHeight()
                                    );
+            }
         
         stitchedImage.begin();
             ofSetColor(255,255,255); 

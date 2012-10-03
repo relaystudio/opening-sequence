@@ -66,6 +66,8 @@ public:
 #ifdef USE_TWO_KINECTS
     ofxKinect kinect2;
     ofxKinect * kinect2Ptr;
+    cv::Mat kinect1Homo;
+    cv::Mat kinect2Homo;
 #endif
     ofTexture stitchKinect(ofxKinect * _k1, ofxKinect * _k2);
     ofFbo stitchedImage;

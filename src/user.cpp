@@ -9,9 +9,9 @@ Layer::~Layer() {
     
 }
 
-void Layer::update(ofPolyline * _path) {
+void Layer::updateLayer(ofPolyline * _path) {
     path = *_path;
-    center = path.getCentroid2D();
+        //center = path.getCentroid2D();
         //    direction = path.get
     area = path.getArea();
 }
@@ -55,7 +55,26 @@ void Layer::draw() {
 }
 
 void Layer::drawPath(){
-    path.draw();
+        //    path.draw();
+        for(int i=0; i< (int) path.size(); i++ ) {
+            bool repeatNext = i == path.size() - 1;
+            
+            const ofPoint& cur = path.getVertices()[i];
+            const ofPoint& next = repeatNext ? path.getVertices()[0] : path.getVertices()[i + 1];
+            
+            float angle = atan2f(next.y - cur.y, next.x - cur.x) * RAD_TO_DEG;
+            float distance = cur.squareDistance(next);
+            
+            if(repeatNext) {
+                ofSetColor(255, 0, 255);
+            }
+            glPushMatrix();
+            glTranslatef(cur.x, cur.y, 0);
+            ofRotate(angle);
+            ofLine(0, 0, 0, distance);
+            ofLine(0, 0, distance, 0);
+            glPopMatrix();
+        }
 }
 
 void Layer::reset() {
