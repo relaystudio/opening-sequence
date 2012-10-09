@@ -26,8 +26,8 @@ public:
     void draw();
     void exit();
     
-    vector<Scene*> scene; // Holds scene objects, pass pointers
-    vector<Layer*> layer; // Holds ALL user obj, pass pointers
+        //vector<Scene*> scene; // Holds scene objects, pass pointers
+        //vector<Crowd*> crowd; // Holds ALL user obj, pass pointers
 
     void setupType();
     void setupCamera();
@@ -56,11 +56,11 @@ public:
     int numThresh;
     
     float threshold;
-    float scaleFactor;
     
     //Camera
+    ofxCv::Calibration calibration;
+    ofImage depthImg, depthImg2;
     ofxKinect kinect;
-    ofImage depthImg;
     ofxKinect * kinectPtr;
     float angle; // kinect angle across both
 #ifdef USE_TWO_KINECTS
@@ -69,13 +69,15 @@ public:
     cv::Mat kinect1Homo;
     cv::Mat kinect2Homo;
 #endif
-    ofTexture stitchKinect(ofxKinect * _k1, ofxKinect * _k2);
+    ofTexture stitchKinect(ofImage * _k1, ofImage * _k2);
     ofFbo stitchedImage;
     ofImage stitched;
     ofVideoGrabber sanityTest;
     cv::Mat stitchedKinect;
     ofImage smallKinect;
     void cvClamp(cv::Mat& mat, float lowerBound, float upperBound);
+    void cvClamp(ofImage& mat, float lowerBound, float upperBound);
+    cv::Mat curThresh;
     
     ofxCv::ContourFinder contourFinder;
     vector<Range> ranges;
@@ -85,11 +87,14 @@ public:
     // Blobs
     void getScene(cv::Mat * _frame, vector<Range> * _thresh);
     
+    Scene activeScene;
+    Scene newScene;
+    
     
     //Events
 
     void keyPressed(int key);
     
 private:
-    
+    float scaleFactor;
 };

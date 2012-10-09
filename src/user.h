@@ -3,26 +3,30 @@
 
 #include "ofMain.h"
 
-class Layer {
+// Render out 1.,0,0 RGB for blank mask
+
+class Crowd {
     
 public:
     
-    Layer();
-    ~Layer();
+    Crowd();
+    ~Crowd();
 
     void loadMesh(string _path);
     void loadShader(string _path);
     void loadVideo(string _path);
     
-    void updateLayer(ofPolyline * _path);
+    void updateCrowd(vector<ofPolyline> * _layers);
     void update();
     void draw(int _x, int _y);
     void draw();
-    void drawPath();
+    void drawDebug();
+    void drawPath(ofPolyline * path);
     void reset();
+    ofTexture & getTextureReference();
     
 private:
-    ofPolyline path;
+    vector<ofPolyline> layers;
     ofVec3f center;
     ofVec3f direction;
     float area; // Area computed from Polyline
@@ -36,5 +40,6 @@ private:
     ofVideoPlayer video;
     ofShader shader;
     ofMesh mesh;
+    ofTessellator tess;
 };
 #endif

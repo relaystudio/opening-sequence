@@ -7,12 +7,18 @@ using namespace cv;
 void testApp::setup() {
     ofSetLogLevel(OF_LOG_VERBOSE);
         //    ofEnableNormalizedTexCoords(); // May as well be explicit
-        //    ofDisableArbTex(); // YEAAA
+    ofDisableNormalizedTexCoords();
+    ofEnableAlphaBlending();
+        //ofDisableArbTex(); // YEAAA
     ofDisableLighting();
-    glEnable(GL_TEXTURE_2D);
+        //glEnable(GL_TEXTURE_2D);
     setupCamera();
     setupType();
     setupPanel();
+    
+    activeScene = *new Scene();
+    activeScene.loadVideo("movie/test_002_unionjack.mov"); // Test
+    activeScene.loadShader("refraction"); // Test
    }
 
 void testApp::exit() {
@@ -32,6 +38,7 @@ void testApp::update() {
     updatePanel();
     updateCamera();
     updateActiveScene();
+    
     ranges.clear();
     for(int i=1;i<numThresh+1;i++) {
         
@@ -41,24 +48,22 @@ void testApp::update() {
         ranges.push_back(range);
 
     }
-    // Init layers
-    if(layer.empty()) {
-        ofLog() << "Populating Layers";
-        for(int i=0;i<numThresh;i++) {
-        layer.push_back(new Layer());
-        }
-    }
     
     getScene(&stitchedKinect,&ranges);
 }
 
-void testApp::cvClamp(Mat & mat, float lowerBound, float upperBound) {
+void testApp::cvClamp(cv::Mat & mat, float lowerBound, float upperBound) {
     Mat upperThresh = mat;
     Mat lowerThresh = mat;
+    Mat dst;
     
     ofxCv::threshold(upperThresh,upperBound,true);
     ofxCv::threshold(lowerThresh,lowerBound,false);
-    cvAnd(&upperThresh, &lowerThresh, &mat);
+    cvAnd(&upperThresh, &lowerThresh, &curThresh);
+}
+void testApp::cvClamp(ofImage& mat, float lowerBound, float upperBound) {
+    cv::Mat src=toCv(mat);
+    cvClamp(src,lowerBound,upperBound);
 }
 
 void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
@@ -67,7 +72,7 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     //2 = background
     //3 = far background
     vector<ofPolyline> contours;
-    blur(stitched, 10);
+    blur(stitched, 20);
         //if(!kinect.isConnected()) convertColor(stitched,stitchedKinect,CV_RGB2GRAY);
         //    Mat stitchedMat = toCv(stitched);
     for(int i=0;i<_thresh->size();i++) {
@@ -75,20 +80,13 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
 //        cvClamp(stitchedMat,_thresh->at(i).min, _thresh->at(i).max);
 //        resize(stitchedMat,smallKinect);
 //      contourFinder.setThreshold(127);
+//  cvClamp(stitched,_thresh->at(i).min,_thresh->at(i).max); // Output curThresh
         contourFinder.findContours(stitched);
         ofPolyline theShape = getContour(&contourFinder);
         contours.push_back(theShape);
     }
     
-    for(int i=0;i<numThresh;i++) {
-        if(contours.size() >= i)
-            layer[i]->updateLayer(&contours[i]);
-    }
-    
-//    for(int i=0;i<contours.size();i++) {
-//        layer[i]->updateLayer(&contours[i]);
-//        
-//    }   
+    activeScene.updateCrowd(&contours);
 }
 
 ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
@@ -104,10 +102,10 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
             if(i==0) poly = polylines[i];
             if(polylines[i].size() >= poly.size()) poly = polylines[i];
         }
-        ofLog() << "Found contours: " << ofToString(poly.size());
+            // ofLog() << "Found contours: " << ofToString(poly.size());
     } 
-        //poly.simplify(.3);    
     poly.close();    
+        //poly.simplify(.3);    
     return poly;
 }
 
@@ -118,19 +116,24 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
 
 void testApp::draw() {
     ofBackground(70, 70, 70);
+        //glEnable(GL_DEPTH_TEST);
+    ofPushMatrix();
+    ofScale(scaleFactor,scaleFactor);
     ofSetColor(255,255,255);   
-
+    if(activeScene.isActive()) {
+        activeScene.draw();
+            //ofLog() << "Rendering scene";
+    }
+    ofPopMatrix();
+    
     if(debug) {
+        ofPushMatrix();
             stitched.draw(0,0);
+            activeScene.drawDebug();
+        ofPopMatrix();
         }
+    
 
-    for(int i=0;i<layer.size();i++) {
-        ofSetColor(255,0,0); 
-        glEnable(GL_DEPTH_TEST);
-        layer[i]->drawPath();
-        glDisable(GL_DEPTH_TEST);
-        
-    }   
     
     GLboolean isDepthTesting;
     glGetBooleanv(GL_DEPTH_TEST, &isDepthTesting);
@@ -180,12 +183,12 @@ void testApp::setupPanel() {
     
     panel.addPanel("Setup");
     panel.addLabel("Debug switches");
-    panel.addToggle("debug",false);
+    panel.addToggle("debug",true);
     panel.addToggle("horiz_flip", false);
     panel.addToggle("vert_flip", false);
     
     panel.addLabel("Main Window");
-    panel.addSlider("scaleWindow", 1.0, 0.005, 1.0, false);
+    panel.addSlider("scaleFactor", .7, 0.005, 1.0, false);
     panel.addSlider("scaleTop", 1.0, 0.05, 1.0, false);
     panel.addSlider("scaleBottom", 1.0, 0.05, 1.0, false);
     panel.addLabel("Image Processing");
@@ -196,7 +199,19 @@ void testApp::setupPanel() {
     panel.addSlider("transType",1, 1, 5,true);
     
     panel.addPanel("Kinect");
-    panel.addSlider("kinectAngle",0,-45,45,true);
+        // These cars acount for basic, crass positioning.
+        // There should probably be a better solution for this.
+        // Either auto stitching, or IDing features on first pass
+        // Maybe a config mode?
+    panel.addSlider("k1_x",0,-200,200,true);
+    panel.addSlider("k1_y",0,-200,200,true);
+    panel.addSlider("k2_x",0,-200,200,true);
+    panel.addSlider("k2_y",0,-200,200,true);
+        // These remove right for k1, left for k2
+    panel.addSlider("k1_clear",0,0,1.,false);
+    panel.addSlider("k2_clear",0,0,1.,false);
+    
+    panel.addSlider("kinectAngle",-30,-45,45,true); // Looks down
     panel.addSlider("kinectSkew", 0, 0, 1.0, false);
     panel.addSlider("kinectLowpass", 0.0, 0, 1., false);
     panel.addSlider("kinectHighpass",1.0,0,1.,false);    
@@ -215,7 +230,8 @@ void testApp::setupPanel() {
 
 void testApp::updatePanel() {
     numThresh = panel.getValueI("NumRanges");
-    
+    if(panel.hasValueChanged("scaleFactor"))
+        scaleFactor = panel.getValueF("scaleFactor");
     if(panel.hasValueChanged("kinectAngle")) {
             angle = panel.getValueI("kinectAngle");
             kinect.setCameraTiltAngle(angle);
@@ -246,62 +262,73 @@ void testApp::setupCamera() {
     ofSetVerticalSync(true);
     
     angle = 0;
-    sanityTest.initGrabber(640,480);
     kinect.setRegistration(true);
     ofLog() << "Starting first kinect";
     kinect.init(false, false, true); // infrared=false, video=true, texture=true
     kinect.open(0);
     kinect.setCameraTiltAngle(angle);
     kinectPtr = &kinect;
-    depthImg.allocate(kinect.width, kinect.height,OF_IMAGE_GRAYSCALE);
+    imitate(depthImg, kinect);
+    
 #ifdef USE_TWO_KINECTS
-    ofLog() << "Starting second kinect";
     kinect2.setRegistration(true);
+    ofLog() << "Starting second kinect";
     kinect2.init(false, false, true);
     kinect2.open(1);
-    kinect2Ptr = &kinect2;
     kinect2.setCameraTiltAngle(angle);
+    kinect2Ptr = &kinect2;
+    imitate(depthImg2, kinect2);
 #endif
+    
     stitched.allocate(kinect.width+kinect2.width, kinect.height, OF_IMAGE_GRAYSCALE);
     smallKinect.allocate((kinect.width+kinect2.width) /4, kinect.height / 4, OF_IMAGE_GRAYSCALE);
-                            
+
+    // Incase no kinets, default to cam for testing. Otherwise setup undistort
+    if(!kinect.isConnected() || !kinect2.isConnected()) {
+        sanityTest.initGrabber(640,480);
+        calibration.setFillFrame(true); // true by default
+        calibration.load("mbp-2011-isight.yml");
+    } else {
+        calibration.setFillFrame(true); // true by default
+        calibration.load("kinect-ir.yml");
+    }
+    
 }
 
 void testApp::updateCamera() {
-    sanityTest.update();
-    kinect.update();
-    depthImg.setFromPixels(kinectPtr->getDepthPixels(), kinect.width, kinect.height,OF_IMAGE_GRAYSCALE);
-#ifdef USE_TWO_KINECTS
-    kinect2.update();
-    if(kinect.isFrameNew()) {
-        stitchKinect(&kinect,&kinect2).readToPixels(stitched);
-        stitched.update();
-        //ofLog() << "Dist from center:" << ofToString(kinect.getColorAt(kinect.width/2,kinect.height/2));
-    }
-#endif
+    if(sanityTest.isInitialized()) sanityTest.update(); // Just in case
+    kinect.update(); 
+    kinect2.update(); // Update both kinects
     
-    // In case of no kinects, break glass
-    if(!kinect.isConnected() && !kinect2.isConnected()) {
-        if(!stitchedImage.isAllocated()) {
-        stitchedImage.allocate(
-                               sanityTest.getWidth()*2,
-                               sanityTest.getHeight()
-                                   );
-            }
+    if(kinect.isFrameNew() || sanityTest.isFrameNew()) {
         
-        stitchedImage.begin();
-            ofSetColor(255,255,255); 
-            ofPushMatrix();
-            ofTranslate(0,0);   sanityTest.draw(0,0);
-            ofTranslate(sanityTest.getWidth(),0);   sanityTest.draw(0,0);
-            ofPopMatrix();
-        stitchedImage.end();
-        stitchedImage.getTextureReference().readToPixels(stitched);
+        if(!kinect.isConnected() && !kinect2.isConnected() && sanityTest.isInitialized()) {
+            // If testing without kinects, copy Sanity twice
+            depthImg.setFromPixels(sanityTest.getPixels(), sanityTest.width, sanityTest.height,OF_IMAGE_GRAYSCALE);
+            depthImg2.setFromPixels(sanityTest.getPixels(), sanityTest.width, sanityTest.height,OF_IMAGE_GRAYSCALE);
+        } else {
+            // Copy the kinect depth map to a ofImage obj
+            depthImg.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height,OF_IMAGE_GRAYSCALE);
+            depthImg2.setFromPixels(kinect2.getDepthPixels(), kinect2.width, kinect2.height,OF_IMAGE_GRAYSCALE);
+        }
+        
+        // Undistort that image via ofxCv + opencv
+        calibration.undistort(toCv(depthImg));
+        calibration.undistort(toCv(depthImg2));
+        
+        // Update the texture in the ofImage object
+        depthImg.update();
+        depthImg2.update();
+        
+        // Pass the images to stitching, which stitches via the texture
+        stitchKinect(&depthImg,&depthImg2).readToPixels(stitched);
+
+        // Update the texture of the stitched object.
         stitched.update();
     }
 }
 
-ofTexture testApp::stitchKinect(ofxKinect * _k1, ofxKinect * _k2) {
+ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
     if(!stitchedImage.isAllocated()) {
     stitchedImage.allocate(
                            _k1->width+_k2->width
@@ -309,14 +336,47 @@ ofTexture testApp::stitchKinect(ofxKinect * _k1, ofxKinect * _k2) {
                            , GL_RGBA, 1);
     }
     
+    ofVec2f k1offset = ofVec2f(
+                           panel.getValueI("k1_x"),
+                           panel.getValueI("k1_y")
+                               );
+
+    ofVec2f k2offset = ofVec2f(
+                               panel.getValueI("k2_x") + _k1->width,
+                               panel.getValueI("k2_y")
+                               );
+    
+    float k1crop = panel.getValueI("k1_clear");
+    float k2crop = panel.getValueI("k2_clear");
+        
     stitchedImage.begin();
         ofPushMatrix();
             ofSetColor(255,255,255); 
-            ofTranslate(0,0);
-            _k1->drawDepth(0,0);
+            ofTranslate(k1offset);
+    
+//    _k1->getTextureReference().bind();
+//    glBegin(GL_QUADS);  
+//    glNormal3f(0.0f,0.0f,1.0f);
+//    glTexCoord3f(0.0f, 0.0f, 0.0f); glVertex3f( 0.0f, 0.0f, 0.0f);    
+//    glTexCoord3f(k1crop, 0.0f, 0.0f); glVertex3f( _k1->width, 0.0f, 0.0f);    
+//    glTexCoord3f(k1crop, 1.0f-k1crop, 0.0f); glVertex3f( _k1->width,_k1->height, 0.0f);    
+//    glTexCoord3f(0.0f, 1.0f-k1crop, 0.0f); glVertex3f( 0.0f, _k1->height, 0.0f);    
+//    glEnd();  
+//    _k1->getTextureReference().unbind();
+    
+    
+        _k1->draw(0,0);
 
-            ofTranslate(_k1->width,0);
-            _k2->drawDepth(0,0);
+    ofTranslate(k1offset);
+//    _k2->getTextureReference().bind();
+//    glBegin(GL_QUADS);  
+//    glNormal3f(0.0f,0.0f,1.0f);
+//    glTexCoord3f(0.0f, 0.0f, 0.0f); glVertex3f( 0.0f, 0.0f, 0.0f);    
+//    glTexCoord3f(0-k2crop, 0.0f, 0.0f); glVertex3f( _k2->width, 0.0f, 0.0f);    
+//    glTexCoord3f(0-k2crop, 1.0f+k2crop, 0.0f); glVertex3f( _k2->width,_k2->height, 0.0f);    
+//    glTexCoord3f(0.0f, 1.0f+k2crop, 0.0f); glVertex3f( 0.0f, _k2->height, 0.0f);       glEnd();  
+//    _k2->getTextureReference().unbind();
+       _k2->draw(0,0);
 
         ofPopMatrix();
     stitchedImage.end();
@@ -333,7 +393,7 @@ void testApp::setDebug(bool _debug) {
  *******************************************/
 
 void testApp::updateActiveScene() {
-    
+    activeScene.update();
 }
 
 void testApp::transitionScene() {
