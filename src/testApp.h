@@ -59,6 +59,7 @@ public:
     
     //Camera
     ofxCv::Calibration calibration;
+    ofxCv::Calibration calibration2;
     ofImage depthImg, depthImg2;
     ofxKinect kinect;
     ofxKinect * kinectPtr;

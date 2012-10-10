@@ -285,12 +285,16 @@ void testApp::setupCamera() {
 
     // Incase no kinets, default to cam for testing. Otherwise setup undistort
     if(!kinect.isConnected() || !kinect2.isConnected()) {
+        ofLog() << "Setting up mbp 2011 isight Calib";
         sanityTest.initGrabber(640,480);
         calibration.setFillFrame(true); // true by default
         calibration.load("mbp-2011-isight.yml");
     } else {
+        ofLog() << "Setting up Kinect Calib";
         calibration.setFillFrame(true); // true by default
         calibration.load("kinect-ir.yml");
+        calibration2.setFillFrame(true); // true by default
+        calibration2.load("kinect-ir.yml");
     }
     
 }
@@ -314,7 +318,7 @@ void testApp::updateCamera() {
         
         // Undistort that image via ofxCv + opencv
         calibration.undistort(toCv(depthImg));
-        calibration.undistort(toCv(depthImg2));
+        calibration2.undistort(toCv(depthImg2));
         
         // Update the texture in the ofImage object
         depthImg.update();
@@ -350,6 +354,7 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
     float k2crop = panel.getValueI("k2_clear");
         
     stitchedImage.begin();
+        ofClear(255);
         ofPushMatrix();
             ofSetColor(255,255,255); 
             ofTranslate(k1offset);
@@ -359,7 +364,7 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
 //    glNormal3f(0.0f,0.0f,1.0f);
 //    glTexCoord3f(0.0f, 0.0f, 0.0f); glVertex3f( 0.0f, 0.0f, 0.0f);    
 //    glTexCoord3f(k1crop, 0.0f, 0.0f); glVertex3f( _k1->width, 0.0f, 0.0f);    
-//    glTexCoord3f(k1crop, 1.0f-k1crop, 0.0f); glVertex3f( _k1->width,_k1->height, 0.0f);    
+//    glTexCoord3f(k1crop, 1.0f-k1crop, 0.0f); glVertex3f(  _k1->width, _k1->height, 0.0f);    
 //    glTexCoord3f(0.0f, 1.0f-k1crop, 0.0f); glVertex3f( 0.0f, _k1->height, 0.0f);    
 //    glEnd();  
 //    _k1->getTextureReference().unbind();
@@ -376,7 +381,7 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
 //    glTexCoord3f(0-k2crop, 1.0f+k2crop, 0.0f); glVertex3f( _k2->width,_k2->height, 0.0f);    
 //    glTexCoord3f(0.0f, 1.0f+k2crop, 0.0f); glVertex3f( 0.0f, _k2->height, 0.0f);       glEnd();  
 //    _k2->getTextureReference().unbind();
-       _k2->draw(0,0);
+           _k2->draw(0,0);
 
         ofPopMatrix();
     stitchedImage.end();
