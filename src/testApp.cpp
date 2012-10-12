@@ -155,7 +155,7 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
 
 void testApp::draw() {
     ofBackground(70, 70, 70);
-    glEnable(GL_DEPTH_TEST);
+        //    glEnable(GL_DEPTH_TEST);
     ofPushMatrix();
     ofScale(scaleFactor,scaleFactor);
     ofSetColor(255,255,255);   
