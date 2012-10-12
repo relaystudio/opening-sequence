@@ -76,8 +76,8 @@ public:
     ofVideoGrabber sanityTest;
     cv::Mat stitchedKinect;
     ofImage smallKinect;
-    void cvClamp(cv::Mat& mat, float lowerBound, float upperBound);
-    void cvClamp(ofImage& mat, float lowerBound, float upperBound);
+    void cvClamp(cv::Mat& src, cv::Mat & dst, float lowerBound, float upperBound);
+    void cvClamp(ofImage& src, float lowerBound, float upperBound);
     cv::Mat curThresh;
     
     ofxCv::ContourFinder contourFinder;
@@ -87,6 +87,8 @@ public:
     
     // Blobs
     void getScene(cv::Mat * _frame, vector<Range> * _thresh);
+    
+    void createGradient(ofImage * img, float low, float mid, float high);
     
     Scene activeScene;
     Scene newScene;
@@ -98,4 +100,6 @@ public:
     
 private:
     float scaleFactor;
+    ofImage distGradient;
+    bool gradientChanged;
 };

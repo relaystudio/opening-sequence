@@ -3,12 +3,12 @@
 Scene::Scene() {
     bActive = false;
     for(int i=0;i<FBO_NUM;i++) {
-        fbo[i].allocate(1920/2,1080/2);
+        fbo[i].allocate(1920,1080);
     }
     crowd = *new Crowd();
     currentFbo=0;
     pong=0;
-    loadRefraction();
+        //loadRefraction();
         //crowd.loadVideo("movie/test_002_unionjack.mov");
 }
 
@@ -90,9 +90,10 @@ void Scene::update() {
     
     
     
-    
-
-    
+    fbo[0].begin();
+    video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
+    crowd.draw();
+    fbo[0].end();
     
 }
 
@@ -100,6 +101,7 @@ void Scene::draw(int _x, int _y) {
     ofSetColor(255);
     ofPopMatrix();
     ofTranslate(_x, _y);
+    fbo[0].draw(0,0);
         //fbo[currentFbo].draw(0,0);
         //drawRefraction();
     ofPushMatrix();

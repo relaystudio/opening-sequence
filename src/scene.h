@@ -4,7 +4,7 @@
 #include "ofMain.h"
 #include "user.h"
 
-#define FBO_NUM 2
+#define FBO_NUM 1
 
 class Scene {
 

@@ -2,7 +2,7 @@
 #include "user.h"
 
 Crowd::Crowd() {
-    frame.allocate(1920/2,1080/2);
+        //frame.allocate(1920/2,1080/2);
 }
 
 Crowd::~Crowd() {
@@ -37,25 +37,25 @@ void Crowd::loadVideo(string _path) {
 void Crowd::update() {
     if(video.isLoaded() || video.isPlaying()) video.update();
 
-    frame.begin();
+        //    frame.begin();
         //glClearColor(0.0, 0.0, 0.0, 0.0);    
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        ofClear(0,0,0,0);
-        glPopMatrix();
-        ofSetColor(255,0,0);
-        //ofScale(frame.getWidth(),frame.getHeight());
-        for(int i=0;i<layers.size();i++) {
-            tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
-            ofSetColor(ceil(255*(1-(i/layers.size()))),0,0);
-                //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
-            mesh.draw();
-        }
-        glPushMatrix();
-        //ofClearAlpha(); // Using this kills alpha channel of FBO
-        glDisable(GL_DEPTH_TEST);
-        ofClearAlpha();
-    frame.end();
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        glEnable(GL_DEPTH_TEST);
+//        ofClear(0,0,0,0);
+//        glPopMatrix();
+//        ofSetColor(255,0,0);
+//        //ofScale(frame.getWidth(),frame.getHeight());
+//        for(int i=0;i<layers.size();i++) {
+//            tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
+//            ofSetColor(ceil(255*(1-(i/layers.size()))),0,0);
+//                //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
+//            mesh.draw();
+//        }
+//        glPushMatrix();
+//        //ofClearAlpha(); // Using this kills alpha channel of FBO
+//        glDisable(GL_DEPTH_TEST);
+//        ofClearAlpha();
+        // frame.end();
     
 /*    shader.begin();
         frame.draw(0,0);
@@ -65,7 +65,26 @@ void Crowd::update() {
 void Crowd::draw(int _x, int _y) {
     ofPopMatrix();
         ofTranslate(_x,_y);
-        frame.draw(0,0);
+    
+    
+        //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+        //ofClear(0,0,0,0);
+
+    ofSetColor(255,0,0);
+        //ofScale(frame.getWidth(),frame.getHeight());
+    for(int i=0;i<layers.size();i++) {
+        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
+        ofSetColor(ceil(255*(1-(i/layers.size()))),0,0);
+            //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
+        mesh.draw();
+    }
+        // glPushMatrix();
+        //ofClearAlpha(); // Using this kills alpha channel of FBO
+    ofSetColor(255);
+        //ofClearAlpha();
+    
+    
+        //        frame.draw(0,0);
     ofPushMatrix();
 }
 
