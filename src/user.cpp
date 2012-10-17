@@ -60,24 +60,32 @@ void Crowd::update() {
 /*    shader.begin();
         frame.draw(0,0);
     shader.end();*/
+    mesh.clear();
+    for(int i=layers.size()-1;i>=0;i--) {
+        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
+            //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
+            //ofTranslate(0,20);
+        meshes.push_back(mesh);
+            //mesh.draw();
+    }
+
 }
 
 void Crowd::draw(int _x, int _y) {
     ofPopMatrix();
         ofTranslate(_x,_y);
-    
-    
+        ofScale(1.5,2);
+        for(int i=0;i<meshes.size();i++) {
+            ofPopMatrix();
+            ofSetColor(ceil(255*(1-(i/layers.size()))),0,0);
+            ofTranslate(0,i*40);
+            mesh.draw();
+            ofPushMatrix();
+        }
         //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
         //ofClear(0,0,0,0);
 
-    ofSetColor(255,0,0);
-        //ofScale(frame.getWidth(),frame.getHeight());
-    for(int i=0;i<layers.size();i++) {
-        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
-        ofSetColor(ceil(255*(1-(i/layers.size()))),0,0);
-            //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
-        mesh.draw();
-    }
+        //ofSetColor(255,0,0);
     ofPushMatrix();
 }
 

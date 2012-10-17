@@ -27,6 +27,7 @@ public:
     
 private:
     vector<ofPolyline> layers;
+    vector<ofMesh> meshes;
     ofVec3f center;
     ofVec3f direction;
     float area; // Area computed from Polyline

@@ -78,14 +78,13 @@ void testApp::createGradient(ofImage * img, float low, float mid, float high) {
 }
 
 void testApp::cvClamp(cv::Mat & src, cv::Mat & dst, float lowerBound, float upperBound) {
+    ofxCv::imitate(dst,src);
     cv::Mat upperThresh = toCv(src).clone();
     cv::Mat lowerThresh = toCv(src).clone();
 
-    imitate(dst,src);
-
-    ofxCv::threshold(upperThresh,upperBound*255,true);
+    ofxCv::threshold(upperThresh,upperBound*255,FALSE);
     ofxCv::threshold(lowerThresh,lowerBound*255,true);
-    dst = upperThresh + lowerThresh;
+    dst = upperThresh - lowerThresh;
         //    ofLog() << "Ending cvClamp";
 }
 
@@ -100,22 +99,23 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     cv::Mat curStitched;
     
     curStitched = toCv(stitched);
-    imitate(curThresh,curStitched);
+        //copy(curStitched,curThresh);
+    imitate(curThresh, curStitched);
     
     for(int i=0;i<4;i++) {
-
+            //        imitate(curThresh,curStitched); 
          cvClamp(curStitched, 
                  curThresh, 
                  _thresh->at(i).min, 
                  _thresh->at(i).max); // Output curThresh
+
+        blur(curThresh, 40);
+        
         if(debug) {
-            blur(curThresh, 40);
             ofxCv::toOf(curThresh, clamp[i]);
             clamp[i].reloadTexture();
         }
-        
-        
-            //        resize(stitched, fullSized);
+            //resize(stitched, fullSized);
         contourFinder.findContours(curThresh);
             //contourFinder.findContours(curThresh);
         ofPolyline theShape = getContour(&contourFinder);
@@ -123,6 +123,7 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     }
     
     activeScene.updateCrowd(&contours);
+
 }
 
 ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
@@ -392,12 +393,14 @@ void testApp::setupCamera() {
 }
 
 void testApp::updateCamera() {
-    if(sanityTest.isInitialized()) sanityTest.update(); // Just in case
-    kinect.update(); 
-    kinect2.update(); // Update both kinects
-    
-
-                                
+    if(sanityTest.isInitialized()) 
+    { 
+        sanityTest.update(); // Just in case
+    }
+    else {
+        kinect.update(); 
+        kinect2.update(); // Update both kinects
+    }
     
     if(kinect.isFrameNew() || sanityTest.isFrameNew()) {
         
@@ -427,7 +430,7 @@ void testApp::updateCamera() {
         } catch (int fuck) {
             ofLog() << ofToString(fuck);
         }
-        stitched.update();
+        
         cv::Mat toCorrect; imitate(toCorrect,stitched); 
         toCorrect = toCv(stitched);
         
@@ -443,98 +446,6 @@ void testApp::updateCamera() {
 
         stitched.update();
     }
-}
-
-void testApp::drawSkew(ofImage * src, ofPoint * tl, ofPoint * tr, ofPoint * br, ofPoint * bl) {
-    // tl,tr,br,bl = normalized 0.-1. 
-    ofSetColor(255);
-    ofTexture   & tex = src->getTextureReference(); 
-        //    src->reloadTexture();
-        //src->draw(0,0);
-        //ofDisableArbTex();
-        //    tex.bind();
-   /* glEnable(GL_BLEND);  
-        //    glEnable(GL_TEXTURE_2D);
-    glMatrixMode(GL_TEXTURE); //Set to Texture
-        glPushMatrix(); 
-            ofScale(src->getWidth(), src->getHeight(),0.0f);  
-            glMatrixMode(GL_MODELVIEW);  
-                    glBegin(GL_QUADS);  
-                        glNormal3f(0.0f,0.0f,1.0f);
-                        
-                        //Top Left
-                        glTexCoord3f(0.0f, 0.0f, 0.0f); 
-                        glVertex3f( tl->x, tl->y, 0.0f);    
-                        
-                        // Top Right
-                        glTexCoord3f(1.0f, 0.0f, 0.0f); 
-                        glVertex3f( tr->x, tr->y, 0.0f);    
-
-                        // Bottom Right
-                        glTexCoord3f(1.0f, 1.0f, 0.0f); 
-                        glVertex3f( br->x,br->y, 0.0f);    
-
-                        // Bottom Left
-                        glTexCoord3f(0.0f, 1.0f, 0.0f); 
-                        glVertex3f( bl->x, bl->y, 0.0f);       
-
-                    glEnd();  
-            glMatrixMode(GL_TEXTURE);  
-        glPopMatrix();  
-    glMatrixMode(GL_MODELVIEW); // Reset to model view
-        //    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
-        //tex.unbind();
-        //ofEnableArbTex();*/
-    
-    glActiveTexture(GL_TEXTURE0);
-    
-    glEnable(tex.getTextureData().textureTarget);
-    
-    glBindTexture( tex.getTextureData().textureTarget, (GLuint)tex.getTextureData().textureID );
-    
-    GLfloat offsetw = 0.0f;
-    GLfloat offseth = 0.0f;
-    
-    if (tex.getTextureData().textureTarget == GL_TEXTURE_2D) {
-        offsetw = 1.0f / (tex.getTextureData().tex_w);
-        offseth = 1.0f / (tex.getTextureData().tex_h);
-    }
-        // -------------------------------------------------
-    
-    GLfloat tx0 = 0+offsetw;
-    GLfloat ty0 = 0+offseth;
-    GLfloat tx1 = tex.getTextureData().tex_t - offsetw;
-    GLfloat ty1 = tex.getTextureData().tex_u - offseth;
-    
-    glPushMatrix(); 
-    GLfloat tex_coords[] = {
-        tx0,ty0,
-        tx1,ty0,
-        tx1,ty1,
-        tx0,ty1
-    };
-    
-    int w = 640;
-    int h = 480;
-    
-    GLfloat verts[] = {
-        tl->x*w, tl->y*h,
-        tr->x*w, tr->y*h,
-        br->x*w, br->y*h,
-        bl->x*w, bl->y*h
-    };
-    
-    glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-    glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
-    glEnableClientState(GL_VERTEX_ARRAY);		
-    glVertexPointer(2, GL_FLOAT, 0, verts );
-    glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
-    glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-    
-    glPopMatrix();
-    glDisable(tex.getTextureData().textureTarget);
-    
 }
 
 ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
