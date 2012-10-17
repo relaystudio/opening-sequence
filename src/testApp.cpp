@@ -80,24 +80,11 @@ void testApp::createGradient(ofImage * img, float low, float mid, float high) {
 void testApp::cvClamp(cv::Mat & src, cv::Mat & dst, float lowerBound, float upperBound) {
     cv::Mat upperThresh = toCv(src).clone();
     cv::Mat lowerThresh = toCv(src).clone();
-                        //    imitate(upperThresh,src);
-                        //    imitate(lowerThresh,src);
-    
+
     imitate(dst,src);
-        //upperThresh = src;
-        //    lowerThresh = src;
-    
-    ofxCv::threshold(upperThresh,upperBound*255,false);
+
+    ofxCv::threshold(upperThresh,upperBound*255,true);
     ofxCv::threshold(lowerThresh,lowerBound*255,true);
-   /* ofLog() << "Starting cvClamp";
-    ofLog() << "upperThresh type:" << ofToString(upperThresh.type()) << "size: "
-    << ofToString(upperThresh.cols) << "x" << ofToString(upperThresh.rows);
-    ofLog() << "lowerThresh type:" << ofToString(lowerThresh.type()) << "size: "
-    << ofToString(lowerThresh.cols) << "x" << ofToString(lowerThresh.rows);
-    ofLog() << "Src type:" << ofToString(src.type()) << "size: "
-    << ofToString(src.cols) << "x" << ofToString(src.rows);
-    ofLog() << "dst type:" << ofToString(dst.type()) << "size: "
-    << ofToString(dst.cols) << "x" << ofToString(dst.rows); */
     dst = upperThresh + lowerThresh;
         //    ofLog() << "Ending cvClamp";
 }
@@ -109,29 +96,27 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     //3 = far background
     contours.clear();
     blur(stitched, 20);
-    imitate(curThresh,stitched);
+    cv::Mat curThresh;
+    cv::Mat curStitched;
     
-    for(int i=0;i<_thresh->size();i++) {
-//        cvClamp(stitchedMat,_thresh->at(i).min, _thresh->at(i).max);
-//        resize(stitchedMat,smallKinect);
-//      contourFinder.setThreshold(127);
-//cv::Mat curThresh;
-        cv::Mat curStitched;
-        curStitched = toCv(stitched);
-            // ofLog() << "Range min: " << ofToString(_thresh->at(i).min) 
-            //<< " max: " << ofToString(_thresh->at(i).max);
-             cvClamp(curStitched, 
-                curThresh, 
-                _thresh->at(i).min, 
-                _thresh->at(i).max); // Output curThresh
-            if(debug) {
-                ofxCv::toOf(curThresh, clamp[i]);
-                clamp[i].reloadTexture();
-            }
+    curStitched = toCv(stitched);
+    imitate(curThresh,curStitched);
+    
+    for(int i=0;i<4;i++) {
+
+         cvClamp(curStitched, 
+                 curThresh, 
+                 _thresh->at(i).min, 
+                 _thresh->at(i).max); // Output curThresh
+        if(debug) {
+            blur(curThresh, 40);
+            ofxCv::toOf(curThresh, clamp[i]);
+            clamp[i].reloadTexture();
+        }
         
         
             //        resize(stitched, fullSized);
-      contourFinder.findContours(curThresh);
+        contourFinder.findContours(curThresh);
             //contourFinder.findContours(curThresh);
         ofPolyline theShape = getContour(&contourFinder);
         contours.push_back(theShape);
