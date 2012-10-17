@@ -78,13 +78,6 @@ void Crowd::draw(int _x, int _y) {
             //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
         mesh.draw();
     }
-        // glPushMatrix();
-        //ofClearAlpha(); // Using this kills alpha channel of FBO
-    ofSetColor(255);
-        //ofClearAlpha();
-    
-    
-        //        frame.draw(0,0);
     ofPushMatrix();
 }
 

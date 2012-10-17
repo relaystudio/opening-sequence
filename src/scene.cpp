@@ -3,7 +3,8 @@
 Scene::Scene() {
     bActive = false;
     for(int i=0;i<FBO_NUM;i++) {
-        fbo[i].allocate(1920,1080);
+        ofLog() << "Allocating FBO" << ofToString(i);
+                fbo[i].allocate(1920,1080);
     }
     crowd = *new Crowd();
     currentFbo=0;
@@ -65,7 +66,7 @@ void Scene::drawRefraction() {
     video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
 
     shader.end();
-    glDisable( GL_TEXTURE_2D );
+        //glDisable( GL_TEXTURE_2D );
     fbo[currentFbo].end();
     fbo[currentFbo].draw(0,0);
 
@@ -88,24 +89,30 @@ void Scene::update() {
     else ofLog() << "No video loaded";
     crowd.update();
     
-    
-    
+  
+  
     fbo[0].begin();
+        //glEnable(GL_DEPTH_TEST);
     video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
     crowd.draw();
+        //    glDisable(GL_DEPTH_TEST);
     fbo[0].end();
     
 }
 
 void Scene::draw(int _x, int _y) {
-    ofSetColor(255);
     ofPopMatrix();
+    ofSetColor(255);
     ofTranslate(_x, _y);
-    fbo[0].draw(0,0);
+        fbo[0].draw(0,0);
         //fbo[currentFbo].draw(0,0);
         //drawRefraction();
-    ofPushMatrix();
     
+//    glEnable(GL_DEPTH_TEST);
+//    video.draw(0,0);
+//    crowd.draw();
+//    glDisable(GL_DEPTH_TEST);
+    ofPushMatrix();
     
 }
 

@@ -12,8 +12,8 @@
 class testApp: public ofBaseApp {
     
    typedef struct {
-        int min;
-        int max;
+        float min;
+        float max;
     } Range;
     
 public:
@@ -41,6 +41,7 @@ public:
     void updateActiveScene();
     void transitionScene();
     ofPolyline getContour(ofxCv::ContourFinder * _contourFinder);
+    void cvStitch(cv::Mat& dst, ofImage * _k1, ofImage * _k2);
     
     // Setup declarations
     void setupPanel();
@@ -53,7 +54,8 @@ public:
     bool debug;
     float fliph;
     float flipv;
-    int numThresh;
+    int numThresh;    
+    vector<ofPolyline> contours;
     
     float threshold;
     
@@ -61,6 +63,9 @@ public:
     ofxCv::Calibration calibration;
     ofxCv::Calibration calibration2;
     ofImage depthImg, depthImg2;
+    
+    ofImage clamp[4];
+    
     ofxKinect kinect;
     ofxKinect * kinectPtr;
     float angle; // kinect angle across both
@@ -70,7 +75,10 @@ public:
     cv::Mat kinect1Homo;
     cv::Mat kinect2Homo;
 #endif
+
     ofTexture stitchKinect(ofImage * _k1, ofImage * _k2);
+    void drawSkew(ofImage * src, ofPoint * tl, ofPoint* tr, ofPoint* br, ofPoint* bl);
+
     ofFbo stitchedImage;
     ofImage stitched;
     ofVideoGrabber sanityTest;
@@ -79,6 +87,8 @@ public:
     void cvClamp(cv::Mat& src, cv::Mat & dst, float lowerBound, float upperBound);
     void cvClamp(ofImage& src, float lowerBound, float upperBound);
     cv::Mat curThresh;
+    
+    ofImage fullSized;
     
     ofxCv::ContourFinder contourFinder;
     vector<Range> ranges;
