@@ -34,8 +34,8 @@ void testApp::exit() {
 
 // Update takes in new frame data and passes it to the canvas
 void testApp::update() {
-    updateConditional();
     updatePanel();
+    updateConditional();
     updateCamera();
     updateActiveScene();
     
@@ -88,7 +88,7 @@ void testApp::cvClamp(cv::Mat & src, cv::Mat & dst, float lowerBound, float uppe
 
     ofxCv::threshold(upperThresh,upperBound*255,false);
     ofxCv::threshold(lowerThresh,lowerBound*255,true);
-    dst = upperThresh + lowerThresh;
+    dst = lowerThresh-upperThresh;
         //    ofLog() << "Ending cvClamp";
 }
 
@@ -102,7 +102,7 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     cv::Mat curThresh;
     cv::Mat curStitched;
     
-    curStitched = toCv(stitched).clone();
+    curStitched = toCv(stitched).clone();//.clone();
         //copy(curStitched,curThresh);
     imitate(curThresh, curStitched);
     
@@ -113,6 +113,7 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
                  _thresh->at(i).min, 
                  _thresh->at(i).max); // Output curThresh
 
+        
         blur(curThresh, 40);
         
         if(debug) {
@@ -125,7 +126,7 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
         ofPolyline theShape = getContour(&contourFinder);
         contours.push_back(theShape);
     }
-    
+        //ofLog() << "There are " << ofToString(contours.size()) << "Contours";
     activeScene.updateCrowd(&contours);
 
 }
@@ -298,10 +299,10 @@ void testApp::setupPanel() {
     
     panel.addPanel("Screen");
     panel.addLabel("Gradient");
-    panel.addToggle("changeGradient", false);
+    panel.addToggle("changeGradient", true);
     panel.addSlider("grad_low", 0, 0, 1., false);
-    panel.addSlider("grad_mid", 0, 0, 1., false);
-    panel.addSlider("grad_high", 0, 0, 1., false);
+    panel.addSlider("grad_mid", .4, 0, 1., false);
+    panel.addSlider("grad_high", 0.8, 0, 1., false);
     
     panel.addLabel("Panning");
     panel.addSlider("panX", 0, -1000, 1000, true);
@@ -388,6 +389,7 @@ void testApp::setupCamera() {
         calibration2.setFillFrame(true); // true by default
         calibration2.load("kinect-ir.yml");
     }
+    
     imitate(distGradient,stitched);
     createGradient(
                    &distGradient,
@@ -426,8 +428,8 @@ void testApp::updateCamera() {
         calibration.undistort(toCv(depthImg2));
         
         // Update the texture in the ofImage object
-        depthImg.reloadTexture();
-        depthImg2.reloadTexture();
+//        depthImg.reloadTexture();
+//        depthImg2.reloadTexture();
         
         // Pass the images to stitching, which stitches via the texture
 //        try {
@@ -440,24 +442,26 @@ void testApp::updateCamera() {
         cvStitch(kstitched, &depthImg, &depthImg2);
         
             //        ofxCv::toOf(kstitched,stitched);    
-        imitate(stitched, kstitched);
-        ofxCv::copy(kstitched, stitched);
+            //imitate(stitched, kstitched);
+            //ofxCv::copy(kstitched, stitched);
         
-        cv::Mat toCorrect; imitate(toCorrect,stitched); 
-        toCorrect = toCv(stitched);
-        cv::Mat gradientMat; imitate(gradientMat,stitched);
+            //cv::Mat resizedGrad; imitate(resizedGrad,kstitched); 
+        cv::Mat gradientMat; imitate(gradientMat, kstitched);
+        cv::Mat gradientMatRoi = gradientMat(cv::Rect(
+                                0,0,distGradient.width,distGradient.height));
+        toCv(distGradient).clone().copyTo(gradientMatRoi);
         
-        ofxCv::resize(distGradient, gradientMat);
-            // gradientMat = toCv(distGradient);     
+            //        gradientMat = toCv(distGradient).clone();     
+            // ofxCv::resize(gradientMat, resizedGrad); 
             //  ofLog() << "Done grad";
-        cv:Mat stitchedMat; imitate(stitchedMat,stitched);
             //        ofLog() << "About to add grad";
             //        cvAnd( &toCorrect , &gradientMat, &stitchedMat );
-            //stitchedMat = toCorrect + gradientMat;
+        cv::add(kstitched, gradientMat, kstitched);
             //        toCorrect += gradientMat;
             //        ofxCv::resize(toCorrect, stitchedMat, INTER_NEAREST);
-        ofxCv::toOf(stitchedMat, stitched);
+            //        ofxCv::toOf(stitchedMat, stitched);
 
+        ofxCv::toOf(kstitched, stitched);
         stitched.update();
     }
 }
@@ -572,13 +576,13 @@ ofVec2f k2bl = ofVec2f(panel.getValueF("k2_bl_x"), panel.getValueF("k2_bl_y"));
         //ofLog() << "Writing img to ROI";
     if(flip) {
         
-        cv::Mat leftRoi = kstitch(cv::Rect(0,0,k1.cols,k1.rows));
-        cv::Mat rightRoi = kstitch(cv::Rect(k1.cols,0,k2.cols,k2.rows));
+        cv::Mat leftRoi = kstitch(cv::Rect(0+(int)k2offset.x,0+(int)k2offset.y,k2.cols-(int)k2crop,k2.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k1.cols+(int)k1offset.x,0+(int)k1offset.y,k2.cols,k2.rows));
         k1.copyTo(rightRoi);
         k2.copyTo(leftRoi);
     } else {
-        cv::Mat leftRoi = kstitch(cv::Rect(0,0,k2.cols,k2.rows));
-        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols,0,k1.cols,k1.rows));
+        cv::Mat leftRoi = kstitch(cv::Rect(0+(int)k1offset.x,0+(int)k1offset.y,k2.cols+(int)k1crop,k2.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols-(int)k1crop,0,k1.cols,k1.rows));
         k1.copyTo(leftRoi);
         k2.copyTo(rightRoi);        
     }

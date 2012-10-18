@@ -92,16 +92,15 @@ void Scene::update() {
   
   
     fbo[0].begin();
-        //glEnable(GL_DEPTH_TEST);
+    ofClear(0);
     video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
     crowd.draw();
-        //    glDisable(GL_DEPTH_TEST);
     fbo[0].end();
     
 }
 
 void Scene::draw(int _x, int _y) {
-    ofPopMatrix();
+    ofPushMatrix();
     ofSetColor(255);
     ofTranslate(_x, _y);
         fbo[0].draw(0,0);
@@ -112,11 +111,12 @@ void Scene::draw(int _x, int _y) {
 //    video.draw(0,0);
 //    crowd.draw();
 //    glDisable(GL_DEPTH_TEST);
-    ofPushMatrix();
+    ofPopMatrix();
     
 }
 
 void Scene::updateCrowd(vector<ofPolyline> * _crowd) {
+        //ofLog() << "Passing" << ofToString(_crowd->size()) << "shapess";
     crowd.updateCrowd(_crowd);
 }
 

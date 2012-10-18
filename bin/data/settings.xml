@@ -1,156 +1,156 @@
 <debug>
-    <val_0>1</val_0>
+    <val_0>0.000000000</val_0>
 </debug>
 <horiz_flip>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </horiz_flip>
 <vert_flip>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </vert_flip>
 <flipKinect>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </flipKinect>
 <mirrorKinect>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </mirrorKinect>
 <scaleFactor>
-    <val_0>0.7</val_0>
+    <val_0>0.699999988</val_0>
 </scaleFactor>
 <scaleTop>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </scaleTop>
 <scaleBottom>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </scaleBottom>
 <transTime>
-    <val_0>1.06</val_0>
+    <val_0>1.059999943</val_0>
 </transTime>
 <transType>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </transType>
 <k1_x>
-    <val_0>-44.4444</val_0>
+    <val_0>0.000000000</val_0>
 </k1_x>
 <k1_y>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k1_y>
 <k2_x>
-    <val_0>-360</val_0>
+    <val_0>0.000000000</val_0>
 </k2_x>
 <k2_y>
-    <val_0>4.44446</val_0>
+    <val_0>0.000000000</val_0>
 </k2_y>
 <k1_clear>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k1_clear>
 <k2_clear>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k2_clear>
 <kinectAngle>
-    <val_0>-30</val_0>
+    <val_0>-30.000000000</val_0>
 </kinectAngle>
 <kHorizKey>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </kHorizKey>
 <kVertKey>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </kVertKey>
 <kinectLowpass>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </kinectLowpass>
 <kinectHighpass>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </kinectHighpass>
 <k1_tl_x>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k1_tl_x>
 <k1_tl_y>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k1_tl_y>
 <k1_tr_x>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k1_tr_x>
 <k1_tr_y>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k1_tr_y>
 <k1_br_x>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k1_br_x>
 <k1_br_y>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k1_br_y>
 <k1_bl_x>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k1_bl_x>
 <k1_bl_y>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k1_bl_y>
 <k2_tl_x>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k2_tl_x>
 <k2_tl_y>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k2_tl_y>
 <k2_tr_x>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k2_tr_x>
 <k2_tr_y>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k2_tr_y>
 <k2_br_x>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k2_br_x>
 <k2_br_y>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k2_br_y>
 <k2_bl_x>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </k2_bl_x>
 <k2_bl_y>
-    <val_0>1</val_0>
+    <val_0>1.000000000</val_0>
 </k2_bl_y>
 <NumRanges>
-    <val_0>4</val_0>
+    <val_0>4.000000000</val_0>
 </NumRanges>
 <range1min>
-    <val_0>0.69</val_0>
+    <val_0>0.100000001</val_0>
 </range1min>
 <range1max>
-    <val_0>0.5</val_0>
+    <val_0>0.240000010</val_0>
 </range1max>
 <range2min>
-    <val_0>0.53</val_0>
+    <val_0>0.270000011</val_0>
 </range2min>
 <range2max>
-    <val_0>0.395</val_0>
+    <val_0>0.414999992</val_0>
 </range2max>
 <range3min>
-    <val_0>0.37</val_0>
+    <val_0>0.434999973</val_0>
 </range3min>
 <range3max>
-    <val_0>0.275</val_0>
+    <val_0>0.660000026</val_0>
 </range3max>
 <range4min>
-    <val_0>0.255</val_0>
+    <val_0>0.664999962</val_0>
 </range4min>
 <range4max>
-    <val_0>0.1</val_0>
+    <val_0>0.889999986</val_0>
 </range4max>
 <changeGradient>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </changeGradient>
 <grad_low>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </grad_low>
 <grad_mid>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </grad_mid>
 <grad_high>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </grad_high>
 <panX>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </panX>
 <panY>
-    <val_0>0</val_0>
+    <val_0>0.000000000</val_0>
 </panY>

@@ -60,8 +60,10 @@ void Crowd::update() {
 /*    shader.begin();
         frame.draw(0,0);
     shader.end();*/
+    meshes.clear();
     mesh.clear();
-    for(int i=layers.size()-1;i>=0;i--) {
+        //ofLog() << "Converting " << ofToString(layers.size()) << " meshes";
+    for(int i=0;i<layers.size();i++) {
         tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
             //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
             //ofTranslate(0,20);
@@ -72,25 +74,34 @@ void Crowd::update() {
 }
 
 void Crowd::draw(int _x, int _y) {
-    ofPopMatrix();
+    ofEnableAlphaBlending();
+    ofPushMatrix();
         ofTranslate(_x,_y);
-        ofScale(1.5,2);
-        for(int i=0;i<meshes.size();i++) {
-            ofPopMatrix();
-            ofSetColor(ceil(255*(1-(i/layers.size()))),0,0);
-            ofTranslate(0,i*40);
-            mesh.draw();
+        ofScale(1.5,2.5);
+        glEnable(GL_DEPTH_TEST);
+        //        ofLog() << "Drawing " << ofToString(meshes.size()) << " meshes";
+        for(int i=0;i < meshes.size();i++) {
+                //ofLog() << "Drawing mesh " << ofToString(i);
             ofPushMatrix();
+            ofSetColor(i*63,70,70,150);
+                //            ofTranslate(0,i*50);
+            meshes[i].drawFaces();
+            ofPopMatrix();
         }
+        glDisable(GL_DEPTH_TEST);
         //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
         //ofClear(0,0,0,0);
 
         //ofSetColor(255,0,0);
-    ofPushMatrix();
+    ofPopMatrix();
 }
 
 void Crowd::draw() {
     draw(0,0);
+}
+
+vector<ofMesh> & Crowd::getMeshes() {
+    return meshes;
 }
 
 ofTexture & Crowd::getTextureReference() {

@@ -23,6 +23,7 @@ public:
     void drawDebug();
     void drawPath(ofPolyline * path);
     void reset();
+    vector<ofMesh> & getMeshes();
     ofTexture & getTextureReference();
     
 private:
