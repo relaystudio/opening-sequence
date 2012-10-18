@@ -79,12 +79,16 @@ void testApp::createGradient(ofImage * img, float low, float mid, float high) {
 
 void testApp::cvClamp(cv::Mat & src, cv::Mat & dst, float lowerBound, float upperBound) {
     ofxCv::imitate(dst,src);
-    cv::Mat upperThresh = toCv(src).clone();
-    cv::Mat lowerThresh = toCv(src).clone();
+    
+//    
+    cv::Mat upperThresh;// = toCv(src).clone();
+    cv::Mat lowerThresh;// = toCv(src).clone();
+    copy(src, upperThresh);
+    copy(src, lowerThresh);
 
-    ofxCv::threshold(upperThresh,upperBound*255,FALSE);
+    ofxCv::threshold(upperThresh,upperBound*255,false);
     ofxCv::threshold(lowerThresh,lowerBound*255,true);
-    dst = upperThresh - lowerThresh;
+    dst = upperThresh + lowerThresh;
         //    ofLog() << "Ending cvClamp";
 }
 
@@ -94,11 +98,11 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     //2 = background
     //3 = far background
     contours.clear();
-    blur(stitched, 20);
+        //  blur(stitched, 20);
     cv::Mat curThresh;
     cv::Mat curStitched;
     
-    curStitched = toCv(stitched);
+    curStitched = toCv(stitched).clone();
         //copy(curStitched,curThresh);
     imitate(curThresh, curStitched);
     
@@ -148,6 +152,7 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
  *******************************************/
 
 void testApp::draw() {
+    glDisable(GL_DEPTH_TEST);
     ofBackground(70, 70, 70);
         //glEnable(GL_DEPTH_TEST);
     ofPushMatrix();
@@ -425,23 +430,32 @@ void testApp::updateCamera() {
         depthImg2.reloadTexture();
         
         // Pass the images to stitching, which stitches via the texture
-        try {
-            stitchKinect(&depthImg,&depthImg2);//.readToPixels(stitched);
-        } catch (int fuck) {
-            ofLog() << ofToString(fuck);
-        }
+//        try {
+//            stitchKinect(&depthImg,&depthImg2);//.readToPixels(stitched);
+//        } catch (int fuck) {
+//            ofLog() << ofToString(fuck);
+//        }
+        cv::Mat kstitched;
+            //        cv::Mat kstitched = cvStitch(&depthImg, &depthImg2);
+        cvStitch(kstitched, &depthImg, &depthImg2);
+        
+            //        ofxCv::toOf(kstitched,stitched);    
+        imitate(stitched, kstitched);
+        ofxCv::copy(kstitched, stitched);
         
         cv::Mat toCorrect; imitate(toCorrect,stitched); 
         toCorrect = toCv(stitched);
+        cv::Mat gradientMat; imitate(gradientMat,stitched);
         
-        cv::Mat gradientMat; imitate(gradientMat,distGradient);
-        gradientMat = toCv(distGradient);
-        
+        ofxCv::resize(distGradient, gradientMat);
+            // gradientMat = toCv(distGradient);     
+            //  ofLog() << "Done grad";
         cv:Mat stitchedMat; imitate(stitchedMat,stitched);
             //        ofLog() << "About to add grad";
             //        cvAnd( &toCorrect , &gradientMat, &stitchedMat );
-        stitchedMat = toCorrect + gradientMat;
-            //        ofLog() << "Done grad";
+            //stitchedMat = toCorrect + gradientMat;
+            //        toCorrect += gradientMat;
+            //        ofxCv::resize(toCorrect, stitchedMat, INTER_NEAREST);
         ofxCv::toOf(stitchedMat, stitched);
 
         stitched.update();
@@ -474,16 +488,6 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
     int w=_k1->getWidth();
     int h=_k1->getHeight();
     
-    ofPoint k1tl = (panel.getValueF("k1_tl_x"), panel.getValueF("k1_tl_y"));
-    ofPoint k1tr = (panel.getValueF("k1_tr_x"), panel.getValueF("k1_tr_y"));
-    ofPoint k1br = (panel.getValueF("k1_br_x"), panel.getValueF("k1_br_y"));
-    ofPoint k1bl = (panel.getValueF("k1_bl_x"), panel.getValueF("k1_bl_y"));
-    
-    ofPoint k2tl = (panel.getValueF("k2_tl_x"), panel.getValueF("k2_tl_y"));
-    ofPoint k2tr = (panel.getValueF("k2_tr_x"), panel.getValueF("k2_tr_y"));
-    ofPoint k2br = (panel.getValueF("k2_br_x"), panel.getValueF("k2_br_y"));
-    ofPoint k2bl = (panel.getValueF("k2_bl_x"), panel.getValueF("k2_bl_y"));    
-    
     
     if(mirror) {
         _k1->mirror(0,1);
@@ -496,77 +500,6 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
         ofSetColor(255); 
             ofTranslate(k1offset);
 
- /*   GLfloat myMatrix[16];
-    
-        //we set it to the default - 0 translation
-        //and 1.0 scale for x y z and w
-    for(int i = 0; i < 16; i++){
-        if(i % 5 != 0) myMatrix[i] = 0.0;
-        else myMatrix[i] = 1.0;
-    }
-    
-        //we need our points as opencv points
-        //be nice to do this without opencv?
-    CvPoint2D32f cvsrc[4];
-    CvPoint2D32f cvdst[4];	
-    
-        //we set the warp coordinates
-        //source coordinates as the dimensions of our window
-    cvsrc[0].x = 0;
-    cvsrc[0].y = 0;
-    cvsrc[1].x = stitchedImage.getWidth();
-    cvsrc[1].y = 0;
-    cvsrc[2].x = stitchedImage.getWidth();
-    cvsrc[2].y = stitchedImage.getHeight();
-    cvsrc[3].x = 0;
-    cvsrc[3].y = stitchedImage.getHeight();			
-    
-    cvdst[0].x = k1tl.x * (float)stitchedImage.getWidth();
-    cvdst[0].y = k1tl.y * (float)stitchedImage.getHeight();
-    
-    cvdst[1].x = k1tr.x * (float)stitchedImage.getWidth();
-    cvdst[1].y = k1tr.y * (float)stitchedImage.getHeight();
-    
-    cvdst[2].x = k1br.x * (float)stitchedImage.getWidth();
-    cvdst[2].y = k1br.y * (float)stitchedImage.getHeight();
-    
-    cvdst[3].x = k1bl.x * (float)stitchedImage.getWidth();
-    cvdst[3].y = k1bl.y * (float)stitchedImage.getHeight();
-    
-    
-    CvMat * translate = cvCreateMat(3,3,CV_32FC1);
-
-    CvMat* src_mat = cvCreateMat( 4, 2, CV_32FC1 );
-    CvMat* dst_mat = cvCreateMat( 4, 2, CV_32FC1 );
-    
-        //copy our points into the matrixes
-    cvSetData( src_mat, cvsrc, sizeof(CvPoint2D32f));
-    cvSetData( dst_mat, cvdst, sizeof(CvPoint2D32f));
-
-    cvFindHomography(src_mat, dst_mat, translate);
-    
-
-    float *matrix = translate->data.fl;
-
-    
-    myMatrix[0]		= matrix[0];
-    myMatrix[4]		= matrix[1];
-    myMatrix[12]	= matrix[2];
-    
-    myMatrix[1]		= matrix[3];
-    myMatrix[5]		= matrix[4];
-    myMatrix[13]	= matrix[5];	
-    
-    myMatrix[3]		= matrix[6];
-    myMatrix[7]		= matrix[7];
-    myMatrix[15]	= matrix[8];	
-    
-    for(int i=0;i<15;i++) {
-    ofLog() << "Matrix "<< ofToString(i) << ": " << ofToString(myMatrix[i]);        
-    }
-*/
-        //finally lets multiply our matrix
-        //wooooo hoooo!
         glPushMatrix();
         //glMultMatrixf(myMatrix);
           if(flip) _k1->drawSubsection(60, 40, _k1->getWidth()-60, _k1->getHeight()-40, 0, 0);
@@ -575,50 +508,7 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
     
 
             ofTranslate(k2offset);
-        //tex2.bind();
-//            if(flip) drawSkew(_k2,&k2tl,&k2tr,&k2br,&k2bl);
-//            else     drawSkew(_k1,&k1tl,&k1tr,&k1br,&k1bl);
-//    
-//            if(flip) _k2->getTextureReference().draw(k2tl,k2tr,k2br,k2bl);
-//            else     _k1->getTextureReference().draw(k1tl,k1tr,k1br,k1bl);
-        //tex2.unbind();
-        //   if(flip) _k2->draw(0,0);
-        //  else _k1->draw(0,0);
-  /*  for(int i = 0; i < 16; i++){
-        if(i % 5 != 0) myMatrix[i] = 0.0;
-        else myMatrix[i] = 1.0;
-    }
-                                                                    
-    
-    cvdst[0].x = k2tl.x * (float)stitchedImage.getWidth();
-    cvdst[0].y = k2tl.y * (float)stitchedImage.getHeight();
-    
-    cvdst[1].x = k2tr.x * (float)stitchedImage.getWidth();
-    cvdst[1].y = k2tr.y * (float)stitchedImage.getHeight();
-    
-    cvdst[2].x = k2br.x * (float)stitchedImage.getWidth();
-    cvdst[2].y = k2br.y * (float)stitchedImage.getHeight();
-    
-    cvdst[3].x = k2bl.x * (float)stitchedImage.getWidth();
-    cvdst[3].y = k2bl.y * (float)stitchedImage.getHeight();
-    
-    cvSetData( src_mat, cvsrc, sizeof(CvPoint2D32f));
-    cvSetData( dst_mat, cvdst, sizeof(CvPoint2D32f));
-    cvFindHomography(src_mat, dst_mat, translate);
-    matrix = translate->data.fl;
-    myMatrix[0]		= matrix[0];
-    myMatrix[4]		= matrix[1];
-    myMatrix[12]	= matrix[2];
-    
-    myMatrix[1]		= matrix[3];
-    myMatrix[5]		= matrix[4];
-    myMatrix[13]	= matrix[5];	
-    
-    myMatrix[3]		= matrix[6];
-    myMatrix[7]		= matrix[7];
-    myMatrix[15]	= matrix[8];	
-    ofPushMatrix();
-        glMultMatrixf(myMatrix);*/
+
     
     if(flip) _k2->drawSubsection(60, 40, _k2->getWidth()-60, _k2->getHeight()-40, 0, 0);
     else _k1->drawSubsection(60, 40, _k1->getWidth()-60, _k1->getHeight()-40, 0, 0);
@@ -632,6 +522,67 @@ ofTexture testApp::stitchKinect(ofImage * _k1, ofImage * _k2) {
     stitchedImage.getTextureReference().readToPixels(stitched);
     
     return stitchedImage.getTextureReference();
+}
+
+void testApp::cvStitch(cv::Mat & dst, ofImage * _k1, ofImage * _k2) {    
+    ofVec2f k1offset = ofVec2f(
+                               panel.getValueI("k1_x"),
+                               panel.getValueI("k1_y")
+                               );
+    
+    ofVec2f k2offset = ofVec2f(
+                               panel.getValueI("k2_x") + _k1->width,
+                               panel.getValueI("k2_y")
+                               );
+    
+    float k1crop = panel.getValueI("k1_clear");
+    float k2crop = panel.getValueI("k2_clear");
+    bool flip = panel.getValueB("flipKinect");
+    bool mirror = panel.getValueB("mirrorKinect");
+    
+    int w=_k1->getWidth();
+    int h=_k1->getHeight();
+    
+    if(mirror) {
+        _k1->mirror(0,1);
+        _k2->mirror(0,1);
+    }
+    
+    
+ofVec2f k1tl = ofVec2f(panel.getValueF("k1_tl_x"), panel.getValueF("k1_tl_y"));
+ofVec2f k1tr = ofVec2f(panel.getValueF("k1_tr_x"), panel.getValueF("k1_tr_y"));
+ofVec2f k1br = ofVec2f(panel.getValueF("k1_br_x"), panel.getValueF("k1_br_y"));
+ofVec2f k1bl = ofVec2f(panel.getValueF("k1_bl_x"), panel.getValueF("k1_bl_y"));
+    
+ofVec2f k2tl = ofVec2f(panel.getValueF("k2_tl_x"), panel.getValueF("k2_tl_y"));
+ofVec2f k2tr = ofVec2f(panel.getValueF("k2_tr_x"), panel.getValueF("k2_tr_y")); 
+ofVec2f k2br = ofVec2f(panel.getValueF("k2_br_x"), panel.getValueF("k2_br_y"));
+ofVec2f k2bl = ofVec2f(panel.getValueF("k2_bl_x"), panel.getValueF("k2_bl_y"));  
+    
+    
+    cv::Mat k1;
+    cv::Mat k2;
+    copy(*_k1,k1);
+    copy(*_k2,k2);
+    
+    cv::Mat kstitch;
+    kstitch.create(k1.rows,k1.cols+k2.cols,k1.type());
+    
+    imitate(dst,kstitch);
+        //ofLog() << "Writing img to ROI";
+    if(flip) {
+        
+        cv::Mat leftRoi = kstitch(cv::Rect(0,0,k1.cols,k1.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k1.cols,0,k2.cols,k2.rows));
+        k1.copyTo(rightRoi);
+        k2.copyTo(leftRoi);
+    } else {
+        cv::Mat leftRoi = kstitch(cv::Rect(0,0,k2.cols,k2.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols,0,k1.cols,k1.rows));
+        k1.copyTo(leftRoi);
+        k2.copyTo(rightRoi);        
+    }
+    dst = kstitch;
 }
 
 void testApp::setDebug(bool _debug) {

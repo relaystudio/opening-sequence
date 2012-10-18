@@ -61,7 +61,6 @@
 		83A43235162135680019083F /* water.vert in Sources */ = {isa = PBXBuildFile; fileRef = 83A43233162135680019083F /* water.vert */; };
 		83E8FEE51618ECA6009753D9 /* cameras.c in Sources */ = {isa = PBXBuildFile; fileRef = 83E8FE881618ECA6009753D9 /* cameras.c */; };
 		83E8FEE61618ECA6009753D9 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 83E8FE8B1618ECA6009753D9 /* core.c */; };
-		83E8FEE71618ECA6009753D9 /* freenect.lib in Frameworks */ = {isa = PBXBuildFile; fileRef = 83E8FE911618ECA6009753D9 /* freenect.lib */; };
 		83E8FEE81618ECA7009753D9 /* registration.c in Sources */ = {isa = PBXBuildFile; fileRef = 83E8FE971618ECA6009753D9 /* registration.c */; };
 		83E8FEE91618ECA7009753D9 /* tilt.c in Sources */ = {isa = PBXBuildFile; fileRef = 83E8FE991618ECA6009753D9 /* tilt.c */; };
 		83E8FEEA1618ECA7009753D9 /* usb_libusb10.c in Sources */ = {isa = PBXBuildFile; fileRef = 83E8FE9A1618ECA6009753D9 /* usb_libusb10.c */; };
@@ -244,8 +243,6 @@
 		83E8FE8B1618ECA6009753D9 /* core.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core.c; sourceTree = "<group>"; };
 		83E8FE8C1618ECA6009753D9 /* freenect_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = freenect_internal.h; sourceTree = "<group>"; };
 		83E8FE8D1618ECA6009753D9 /* GPL2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GPL2; sourceTree = "<group>"; };
-		83E8FE901618ECA6009753D9 /* freenect.dll */ = {isa = PBXFileReference; lastKnownFileType = file; path = freenect.dll; sourceTree = "<group>"; };
-		83E8FE911618ECA6009753D9 /* freenect.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = freenect.lib; sourceTree = "<group>"; };
 		83E8FE921618ECA6009753D9 /* libfreenect-registration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "libfreenect-registration.h"; sourceTree = "<group>"; };
 		83E8FE931618ECA6009753D9 /* libfreenect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libfreenect.h; sourceTree = "<group>"; };
 		83E8FE941618ECA6009753D9 /* libfreenect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = libfreenect.hpp; sourceTree = "<group>"; };
@@ -306,7 +303,6 @@
 				E4C2424810CC5A17004149E2 /* Cocoa.framework in Frameworks */,
 				E4C2424910CC5A17004149E2 /* IOKit.framework in Frameworks */,
 				839B3C29157D384900D3335A /* opencv.a in Frameworks */,
-				83E8FEE71618ECA6009753D9 /* freenect.lib in Frameworks */,
 				83E8FEEB1618ECA7009753D9 /* usb-1.0.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -608,18 +604,8 @@
 		83E8FE8E1618ECA6009753D9 /* lib */ = {
 			isa = PBXGroup;
 			children = (
-				83E8FE8F1618ECA6009753D9 /* vs2010 */,
 			);
 			path = lib;
-			sourceTree = "<group>";
-		};
-		83E8FE8F1618ECA6009753D9 /* vs2010 */ = {
-			isa = PBXGroup;
-			children = (
-				83E8FE901618ECA6009753D9 /* freenect.dll */,
-				83E8FE911618ECA6009753D9 /* freenect.lib */,
-			);
-			path = vs2010;
 			sourceTree = "<group>";
 		};
 		83E8FE9C1618ECA6009753D9 /* libusb */ = {
@@ -963,7 +949,7 @@
 					"-lpthread",
 					"-mtune=native",
 				);
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.6;
 			};
 			name = Debug;
 		};
@@ -994,7 +980,7 @@
 					"-lpthread",
 					"-mtune=native",
 				);
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.6;
 			};
 			name = Release;
 		};
@@ -1095,7 +1081,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_7 = "\"$(SRCROOT)/../../openFrameworks/addons/ofxKinect/libs/libusb/osx/libs\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.6;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1196,7 +1182,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_7 = "\"$(SRCROOT)/../../openFrameworks/addons/ofxKinect/libs/libusb/osx/libs\"";
 				PREBINDING = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx10.6;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

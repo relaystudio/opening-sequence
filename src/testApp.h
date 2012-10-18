@@ -77,6 +77,7 @@ public:
 #endif
 
     ofTexture stitchKinect(ofImage * _k1, ofImage * _k2);
+    cv::Mat cvStitch(ofImage * _k1, ofImage * _k2);
     void drawSkew(ofImage * src, ofPoint * tl, ofPoint* tr, ofPoint* br, ofPoint* bl);
 
     ofFbo stitchedImage;
