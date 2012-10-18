@@ -9,12 +9,18 @@ Scene::Scene() {
     crowd = *new Crowd();
     currentFbo=0;
     pong=0;
+    loadDOF();
         //loadRefraction();
         //crowd.loadVideo("movie/test_002_unionjack.mov");
 }
 
 Scene::~Scene() {
     
+}
+
+void Scene::loadDOF() {
+    shader.load("shader/DOFLine.vert", "shader/DOFLine.frag");
+    ofLog() << "Loaded DOF";
 }
 
 void Scene::loadRefraction() {
@@ -94,7 +100,13 @@ void Scene::update() {
     fbo[0].begin();
     ofClear(0);
     video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
+    shader.begin();
+    shader.setUniform1f("aspectRatio", ofGetWidth() / ofGetHeight());
+    shader.setUniform1f("lineWidth", 1);
+    shader.setUniform1f("focusDistance", 200+ofGetMouseX()/2);
+    shader.setUniform1f("aperture", .03);
     crowd.draw();
+    shader.end();
     fbo[0].end();
     
 }

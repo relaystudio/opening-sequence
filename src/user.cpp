@@ -64,7 +64,7 @@ void Crowd::update() {
     mesh.clear();
         //ofLog() << "Converting " << ofToString(layers.size()) << " meshes";
     for(int i=0;i<layers.size();i++) {
-        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
+        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,false);
             //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
             //ofTranslate(0,20);
         meshes.push_back(mesh);
@@ -83,8 +83,8 @@ void Crowd::draw(int _x, int _y) {
         for(int i=0;i < meshes.size();i++) {
                 //ofLog() << "Drawing mesh " << ofToString(i);
             ofPushMatrix();
-            ofSetColor(i*63,70,70,150);
-                //            ofTranslate(0,i*50);
+            ofSetColor(10,10,10,i*63);
+            ofTranslate(0,0,i*100);
             meshes[i].drawFaces();
             ofPopMatrix();
         }

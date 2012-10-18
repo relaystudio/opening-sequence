@@ -17,7 +17,7 @@ void testApp::setup() {
     setupPanel();
     
     activeScene = *new Scene();
-    activeScene.loadVideo("movie/test_002_unionjack.mov"); // Test
+    activeScene.loadVideo("movie/test_003_ink.mov"); // Test
                                                            //activeScene.loadShader("refraction"); // Test
    }
 
@@ -102,7 +102,7 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     cv::Mat curThresh;
     cv::Mat curStitched;
     
-    curStitched = toCv(stitched).clone();//.clone();
+    curStitched = toCv(stitched).clone();
         //copy(curStitched,curThresh);
     imitate(curThresh, curStitched);
     
@@ -456,7 +456,8 @@ void testApp::updateCamera() {
             //  ofLog() << "Done grad";
             //        ofLog() << "About to add grad";
             //        cvAnd( &toCorrect , &gradientMat, &stitchedMat );
-        cv::add(kstitched, gradientMat, kstitched);
+
+            //        cv::add(kstitched, gradientMat, kstitched);
             //        toCorrect += gradientMat;
             //        ofxCv::resize(toCorrect, stitchedMat, INTER_NEAREST);
             //        ofxCv::toOf(stitchedMat, stitched);

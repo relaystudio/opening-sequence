@@ -17,6 +17,7 @@ public:
     void loadShader(string _path); 
     void loadRefraction();
     void drawRefraction();
+    void loadDOF();
     int currentFbo;
     ofShader shader;
     ofShader refract;
