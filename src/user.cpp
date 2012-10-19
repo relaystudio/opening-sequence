@@ -83,7 +83,7 @@ void Crowd::draw(int _x, int _y) {
         for(int i=0;i < meshes.size();i++) {
                 //ofLog() << "Drawing mesh " << ofToString(i);
             ofPushMatrix();
-            ofSetColor(10,10,10,i*63);
+            ofSetColor(10,10,10,200+(i*10)); //i*63
             ofTranslate(0,0,i*100);
             meshes[i].drawFaces();
             ofPopMatrix();

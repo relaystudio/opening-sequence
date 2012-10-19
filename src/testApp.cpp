@@ -17,7 +17,7 @@ void testApp::setup() {
     setupPanel();
     
     activeScene = *new Scene();
-    activeScene.loadVideo("movie/test_003_ink.mov"); // Test
+    activeScene.loadVideo("movie/test_002_unionjack.mov"); // Test
                                                            //activeScene.loadShader("refraction"); // Test
    }
 
@@ -87,7 +87,7 @@ void testApp::cvClamp(cv::Mat & src, cv::Mat & dst, float lowerBound, float uppe
     copy(src, lowerThresh);
 
     ofxCv::threshold(upperThresh,upperBound*255,false);
-    ofxCv::threshold(lowerThresh,lowerBound*255,true);
+    ofxCv::threshold(lowerThresh,lowerBound*255,false);
     dst = lowerThresh-upperThresh;
         //    ofLog() << "Ending cvClamp";
 }
@@ -139,7 +139,10 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
         polylines = _contourFinder->getPolylines();
         for(int i=0; i<polylines.size(); i++) {
             if(i==0) poly = polylines[i];
-            if(polylines[i].size() >= poly.size()) poly = polylines[i];
+            if(polylines[i].getArea() > 20) {
+                    //if(polylines[i].size() >= poly.size()) 
+                poly.addVertices(polylines[i].getVertices());
+            }
         }
     } 
     poly.close();    
