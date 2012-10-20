@@ -19,6 +19,17 @@ void Crowd::updateCrowd(vector<ofPolyline> * _layers) {
         //   area = path.getArea();
 }
 
+void Crowd::updateCrowd(vector<ofImage> * _frames) {
+    frames.clear();
+    frames = *_frames;
+    //frame.allocate(1920/2,1080/2);
+    // path = *_path;
+    //center = path.getCentroid2D();
+    //    direction = path.get
+    //   area = path.getArea();
+    //vector<ofImage> frames;
+}
+
 void Crowd::loadMesh(string _path) {
     
 }
@@ -60,34 +71,49 @@ void Crowd::update() {
 /*    shader.begin();
         frame.draw(0,0);
     shader.end();*/
+    if(layers.size() > 0){
     meshes.clear();
     mesh.clear();
         //ofLog() << "Converting " << ofToString(layers.size()) << " meshes";
     for(int i=0;i<layers.size();i++) {
-        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,false);
+        tess.tessellateToMesh(layers[i],OF_POLY_WINDING_NONZERO,mesh,true);
             //ofLog() << "Mesh has:" << ofToString(mesh.getNumVertices()) << " verts";
             //ofTranslate(0,20);
         meshes.push_back(mesh);
             //mesh.draw();
     }
-
+    }
+    else if ( frames.size() > 0 ) {
+        for(int i=0;i<frames.size();i++) {
+        }
+        
+    }
 }
 
 void Crowd::draw(int _x, int _y) {
     ofEnableAlphaBlending();
     ofPushMatrix();
         ofTranslate(_x,_y);
-        ofScale(1.5,2.5);
+        ofScale(1.5,2.);
         glEnable(GL_DEPTH_TEST);
         //        ofLog() << "Drawing " << ofToString(meshes.size()) << " meshes";
         for(int i=0;i < meshes.size();i++) {
                 //ofLog() << "Drawing mesh " << ofToString(i);
             ofPushMatrix();
-            ofSetColor(10,10,10,200+(i*10)); //i*63
+            ofSetColor(10,10,10); //i*63
             ofTranslate(0,0,i*100);
             meshes[i].drawFaces();
             ofPopMatrix();
         }
+    if( frames.size() > 0 ) {
+        for(int i=0;i<frames.size();i++) {
+            ofLog() << "Drawing frame" << ofToString(i);
+            ofPushMatrix();
+            frames[i].reloadTexture();
+           // frames[i].draw(0,0);
+            ofPopMatrix();
+        }
+    }
         glDisable(GL_DEPTH_TEST);
         //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
         //ofClear(0,0,0,0);

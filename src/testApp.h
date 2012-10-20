@@ -90,7 +90,7 @@ public:
     cv::Mat curThresh;
     
     ofImage fullSized;
-    
+    vector<ofImage> clamped;
     ofxCv::ContourFinder contourFinder;
     vector<Range> ranges;
     

@@ -23,15 +23,19 @@ public:
     ofShader refract;
     ofFbo fbo[FBO_NUM];
     int pong;
+    int fade;
         
     ofVideoPlayer video;
     bool isActive();
     void update();
+    void fadeIn();
+    void fadeOut();
     void draw(int _x, int _y);
     void draw();
     void drawDebug();
     void reset();
     void updateCrowd(vector<ofPolyline> * _layers);
+    void updateCrowd(vector<ofImage> * _crowd);
     
     vector<ofVec2f> shaderVar;
     
@@ -39,6 +43,5 @@ private:
     bool bActiveShader;
     bool bActive;
     Crowd crowd;
-    float fade;
 };
 #endif
