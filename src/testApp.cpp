@@ -17,8 +17,12 @@ void testApp::setup() {
     setupPanel();
     
     activeScene = *new Scene();
-    activeScene.loadVideo("movie/test_002_unionjack.mov"); // Test
+
+   // activeScene.loadVideo("movie/Camo_01_pjpeg.mov"); // Test
                                                            //activeScene.loadShader("refraction"); // Test
+    
+        newScene = *new Scene();
+   // newScene.loadVideo("movie/Camo_01_pjpeg.mov");
    }
 
 void testApp::exit() {
@@ -106,6 +110,9 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
         //copy(curStitched,curThresh);
     imitate(curThresh, curStitched);
     
+    //background.update(curStitched, curThresh);
+    absdiff(curStitched, bgSub, curStitched);
+    clamped.clear();
     for(int i=0;i<4;i++) {
             //        imitate(curThresh,curStitched); 
          cvClamp(curStitched, 
@@ -114,20 +121,25 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
                  _thresh->at(i).max); // Output curThresh
 
         
-        blur(curThresh, 40);
-        
+        blur(curThresh, panel.getValueI("cvBlur"));
+           //
+        ofxCv::toOf(curThresh, clamp[0]);
+        clamp[0].reloadTexture();
+        clamped.push_back(clamp[0]);
+        /*
         if(debug) {
-            ofxCv::toOf(curThresh, clamp[i]);
+            ofxCv::toOf(curThresh, clamp[0]);
             clamp[i].reloadTexture();
         }
             //resize(stitched, fullSized);
         contourFinder.findContours(curThresh);
             //contourFinder.findContours(curThresh);
         ofPolyline theShape = getContour(&contourFinder);
-        contours.push_back(theShape);
+        contours.push_back(theShape);*/
     }
+    activeScene.updateCrowd(&clamped);
         //ofLog() << "There are " << ofToString(contours.size()) << "Contours";
-    activeScene.updateCrowd(&contours);
+    //activeScene.updateCrowd(&contours);
 
 }
 
@@ -139,10 +151,12 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
         polylines = _contourFinder->getPolylines();
         for(int i=0; i<polylines.size(); i++) {
             if(i==0) poly = polylines[i];
-            if(polylines[i].getArea() > 20) {
-                    //if(polylines[i].size() >= poly.size()) 
-                poly.addVertices(polylines[i].getVertices());
-            }
+           // if(polylines[i].getArea() > 20)
+                if(polylines[i].size() >= poly.size())
+                    poly = polylines[i];
+               // poly.addVertices(polylines[i].getVertices());
+        //    }
+            
         }
     } 
     poly.close();    
@@ -174,7 +188,7 @@ void testApp::draw() {
         ofTranslate(ofGetWidth()-200,0);
         ofSetColor(255);
         for(int i=0;i<4;i++) {
-            clamp[i].draw(0,i*100,200,100);
+            clamped[i].draw(0,i*100,200,100);
         }
         
         ofPopMatrix();
@@ -222,6 +236,11 @@ void testApp::updateConditional() {
     if(panel.getValueB("vert_flip")) flipv = 1.0;
     else flipv = 0;
     
+    if(panel.getValueB("transition")) {
+        transitionScene();
+        panel.setValueB("transition",false);
+    }
+    
 }
 
 void testApp::setupPanel() {
@@ -232,15 +251,16 @@ void testApp::setupPanel() {
     panel.addPanel("Setup");
     panel.addLabel("Debug switches");
     panel.addToggle("debug",true);
+    panel.addToggle("transition", false);
     panel.addToggle("horiz_flip", false);
     panel.addToggle("vert_flip", false);
     panel.addToggle("flipKinect", false);
     panel.addToggle("mirrorKinect", false);
+    panel.addToggle("subtractBG", false);
+    panel.addSlider("cvBlur",40,0,80,true);
     
     panel.addLabel("Main Window");
     panel.addSlider("scaleFactor", .7, 0.005, 1.0, false);
-    panel.addSlider("scaleTop", 1.0, 0.05, 1.0, false);
-    panel.addSlider("scaleBottom", 1.0, 0.05, 1.0, false);
     panel.addLabel("Image Processing");
     
     panel.addLabel("Animation");
@@ -332,6 +352,12 @@ void testApp::updatePanel() {
         panel.setValueB("changeGradient", false);
     }
     
+    if( panel.getValueB("subtractBG")) {
+        imitate(bgSub,stitched);
+        bgSub = toCv(stitched).clone();
+        panel.setValueB("subtractBG",false);
+    }
+    
     for(int i=1;i<panel.getValueI("NumRanges")+1;i++) {
         if(panel.getValueI("range" + ofToString(i) + "min")) {
             panel.addSlider("range" + ofToString(i) + "min", 0,1.0,false);
@@ -354,6 +380,9 @@ void testApp::setupType() {
 void testApp::setupCamera() {
     ofSetFrameRate(30);
     ofSetVerticalSync(true);
+    
+    background.setLearningRate(900);
+    background.setThresholdValue(10);
     
     angle = 0;
     kinect.setRegistration(true);
@@ -427,8 +456,8 @@ void testApp::updateCamera() {
         }
         
         // Undistort that image via ofxCv + opencv
-        calibration.undistort(toCv(depthImg));
-        calibration.undistort(toCv(depthImg2));
+        //calibration.undistort(toCv(depthImg));
+        //calibration.undistort(toCv(depthImg2));
         
         // Update the texture in the ofImage object
 //        depthImg.reloadTexture();
@@ -580,8 +609,8 @@ ofVec2f k2bl = ofVec2f(panel.getValueF("k2_bl_x"), panel.getValueF("k2_bl_y"));
         //ofLog() << "Writing img to ROI";
     if(flip) {
         
-        cv::Mat leftRoi = kstitch(cv::Rect(0+(int)k2offset.x,0+(int)k2offset.y,k2.cols-(int)k2crop,k2.rows));
-        cv::Mat rightRoi = kstitch(cv::Rect(k1.cols+(int)k1offset.x,0+(int)k1offset.y,k2.cols,k2.rows));
+        cv::Mat leftRoi = kstitch(cv::Rect(0+(int)k1offset.x,0+(int)k1offset.y,k2.cols+(int)k1crop,k2.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols-(int)k1crop,0,k1.cols,k1.rows));
         k1.copyTo(rightRoi);
         k2.copyTo(leftRoi);
     } else {
@@ -606,5 +635,10 @@ void testApp::updateActiveScene() {
 }
 
 void testApp::transitionScene() {
-    
+    activeScene.fadeOut();
+    activeScene = newScene;
+    activeScene.fadeIn();
+    newScene = *new Scene();
+    newScene.loadVideo("movie/Camo_01_pjpeg.mov");
+    ofLog() << "Transitioned scene";
 }

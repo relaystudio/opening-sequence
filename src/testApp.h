@@ -84,13 +84,14 @@ public:
     ofImage stitched;
     ofVideoGrabber sanityTest;
     cv::Mat stitchedKinect;
+    cv::Mat bgSub;
     ofImage smallKinect;
     void cvClamp(cv::Mat& src, cv::Mat & dst, float lowerBound, float upperBound);
     void cvClamp(ofImage& src, float lowerBound, float upperBound);
     cv::Mat curThresh;
     
     ofImage fullSized;
-    
+    vector<ofImage> clamped;
     ofxCv::ContourFinder contourFinder;
     vector<Range> ranges;
     
