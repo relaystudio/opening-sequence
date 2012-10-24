@@ -17,6 +17,7 @@ public:
     void loadVideo(string _path);
     
     void updateCrowd(vector<ofPolyline> * _layers);
+    void updateCrowd(vector<ofImage> * _frames);
     void update();
     void draw(int _x, int _y);
     void draw();
@@ -25,10 +26,11 @@ public:
     void reset();
     vector<ofMesh> & getMeshes();
     ofTexture & getTextureReference();
-    
+    void updateColours( vector<ofColor> _colours);
 private:
     vector<ofPolyline> layers;
     vector<ofMesh> meshes;
+    vector<ofImage> frames;
     ofVec3f center;
     ofVec3f direction;
     float area; // Area computed from Polyline
@@ -36,7 +38,7 @@ private:
     
     bool bActive; // Active tracking
     bool active; // Facing object
-    
+    vector<ofColor> colour;
     ofFbo frame;
     
     ofVideoPlayer video;

@@ -20,7 +20,24 @@ Scene::~Scene() {
 }
 
 void Scene::loadDOF() {
-    shader.load("shader/DOFLine.vert", "shader/DOFLine.frag");
+    //shader.load("shader/DOFLine.vert", "shader/DOFLine.frag");
+    
+    string shader_program = "#version 120\n \
+    #extension GL_ARB_texture_rectangle: enable\n \
+    \
+    uniform sampler2DRect tex0;\
+    uniform sampler2DRect maskTex;\
+    \
+    void main(void) {\
+    vec2 pos = gl_TexCoord[0].st;\
+    vec3 src = texture2DRect(tex0,pos).rgb;\
+    float mask = texture2DRect(maskTex,pos).r;\
+    gl_FragColor = vec4( src, 1.0-mask);\
+    }";
+    
+    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, shader_program);
+    shader.linkProgram();
+    
     ofLog() << "Loaded DOF";
 }
 
@@ -29,55 +46,6 @@ void Scene::loadRefraction() {
     ofLog() << "Loading refract";
 }
 
-void Scene::drawRefraction() {
-/*    refract.begin();
-    refract.setUniformTexture("buffer", crowd.getTextureReference(),1);
-    refract.setUniform2f("pixel",1,1);
-//    fbo[0].getTextureReference().bind();
-        fbo[currentFbo].draw(0,0);
-//    fbo[0].getTextureReference().unbind();
-    
-    refract.end();
-    */
-    pong = (currentFbo+1)%FBO_NUM;
-    
-    fbo[pong].begin();
-    
-    ofClear(255);
-    
-    refract.begin();
-    
-    refract.setUniformTexture( "buffer", fbo[currentFbo].getTextureReference(), 0 ); 
-    refract.setUniform2f("pixel", 1/fbo[0].getWidth(),1/fbo[0].getHeight());
-    video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
-    fbo[currentFbo].draw(0,0);
-    
-    refract.end();
-    
-    crowd.draw();
-    
-    fbo[pong].end();
-    
-    currentFbo = pong;    
-    
-    
-    fbo[currentFbo].begin();    
-    // Bind the FBO we last rendered as a texture
-    glEnable( GL_TEXTURE_2D );
-    shader.begin();
-
-    shader.setUniformTexture( "tex", fbo[ pong ].getTextureReference(), 0 );
-    shader.setUniform2f( "pixel", 1/fbo[0].getWidth(),1/fbo[0].getHeight() );
-    shader.setUniformTexture( "buffer", crowd.getTextureReference(), 0 );
-
-    video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
-
-    shader.end();
-        //glDisable( GL_TEXTURE_2D );
-    fbo[currentFbo].end();
-    fbo[currentFbo].draw(0,0);
-
-}
 
 void Scene::loadVideo(string _path) {
     if(video.isLoaded()) video.close();
@@ -99,16 +67,12 @@ void Scene::update() {
   
   
     fbo[0].begin();
-    ofClear(0);
+    //glClear(GL_COLOR_BUFFER_BIT);
+//    ofClear(0,0,0,0);
     video.draw(0,0,fbo[0].getWidth(),fbo[0].getHeight());
-   // shader.begin();
-    shader.setUniform1f("aspectRatio", ofGetWidth() / ofGetHeight());
-    shader.setUniform1f("lineWidth", 1);
-    shader.setUniform1f("focusDistance", 200+ofGetMouseX()/2);
-    shader.setUniform1f("aperture", .03);
 
     crowd.draw();
- //   shader.end();
+    //ofClearAlpha();
     fbo[0].end();
     
 }
@@ -116,9 +80,14 @@ void Scene::update() {
 void Scene::draw(int _x, int _y) {
     ofPushMatrix();
     ofSetColor(255);
+    //glEnable(GL_BLEND);
     ofTranslate(_x, _y);
-        ofSetColor(255,255,255,fade);
+    //    shader.begin();
+  //      shader.setUniformTexture("maskTex",fbo[0].getTextureReference(),1);
+//        fbo[0].draw(0,0);
+        //        shader.end();
         fbo[0].draw(0,0);
+        
         //fbo[currentFbo].draw(0,0);
         //drawRefraction();
     
@@ -126,8 +95,8 @@ void Scene::draw(int _x, int _y) {
 //    video.draw(0,0);
 //    crowd.draw();
 //    glDisable(GL_DEPTH_TEST);
+   // glDisable(GL_BLEND);
     ofPopMatrix();
-    
 }
 
 void Scene::updateCrowd(vector<ofPolyline> * _crowd) {
@@ -138,6 +107,10 @@ void Scene::updateCrowd(vector<ofPolyline> * _crowd) {
 void Scene::updateCrowd(vector<ofImage> * _crowd) {
     //ofLog() << "Passing" << ofToString(_crowd->size()) << "shapess";
     crowd.updateCrowd(_crowd);
+}
+
+void Scene::updateColours(vector<ofColor> * color) {
+    crowd.updateColours(*color);
 }
 
 void Scene::drawDebug() {
