@@ -35,12 +35,18 @@ void testApp::setup() {
     
     
     
+
     transActive = false;
     activeScene = 0;
     newScene = 1;
     
     scene[activeScene] = *new Scene();
+
     scene[activeScene].loadVideo("movie/Camo_01_pjpeg.mov");
+
+
+    scene[activeScene].loadVideo("movie/Camo_01_pjpeg.mov");
+                                                           //activeScene.loadShader("refraction"); // Test
     makeNewScene();
    }
 
@@ -138,6 +144,11 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
     clamped.clear();
  //   blur(curStitched, panel.getValueI("cvBlur"));
     
+    //background.update(curStitched, curThresh);
+    //absdiff(curStitched, bgSub, curStitched);
+    clamped.clear();
+ //   blur(curStitched, panel.getValueI("cvBlur"));
+    
     for(int i=0;i<4;i++) {
             //        imitate(curThresh,curStitched);
          curThresh = cv::Mat::ones(curThresh.size(), curThresh.type());
@@ -231,6 +242,7 @@ void testApp::draw() {
         glColorMask(1,1,1,1);
         glColor4f(1.,1.,1.,1.);
         trans.draw(0,0);
+
         glColorMask(1,1,1,1);
         glEnable(GL_BLEND);
         
@@ -242,6 +254,7 @@ void testApp::draw() {
         glColor4f(1.,1.,1.,1-transFade);
         scene[activeScene].draw();
         glColor4f(1.,1.,1.,1.);
+
 //        glDisable(GL_BLEND);
 //        trans.draw(0,0);
 //        glEnable(GL_BLEND);
@@ -338,6 +351,11 @@ void testApp::updateConditional() {
     
     if(panel.getValueB("horiz_flip")) fliph = 1.0;
     else fliph = 0;
+    
+    if(panel.getValueB("transition")) {
+        transitionScene();
+        panel.setValueB("transition",false);
+    }
     
     if(panel.getValueB("transition")) {
         transitionScene();
@@ -460,6 +478,7 @@ void testApp::updatePanel() {
     
     if( panel.getValueB("subtractBG")) {
         imitate(bgSub,stitched);
+
         //bgSub = cv::Mat::ones(bgSub.size(), bgSub.type());
         bgSub = toCv(stitched).clone();
         panel.setValueB("subtractBG",false);
@@ -789,6 +808,7 @@ void testApp::setDebug(bool _debug) {
 
 void testApp::updateActiveScene() {
     scene[activeScene].update();
+
     
     if(!transActive) {
         
@@ -808,11 +828,13 @@ void testApp::transitionScene() {
     
     if(trans.isLoaded())
         trans.setFrame(0);
+
     else loadRandomTransition();
     makeNewScene();
     trans.setLoopState(OF_LOOP_NONE);
     trans.setFrame(0);
     trans.play();
+
     transActive = true;
     ofLog() << "Transitioned scene";
 }
@@ -830,6 +852,7 @@ void testApp::updateTransition() {
 //            << " of " << ofToString(trans.getTotalNumFrames());
             transFade = trans.getCurrentFrame() / trans.getTotalNumFrames();
         } else {
+
             if(activeScene == 1) {
                 newScene = 1; activeScene = 0;
             } else {

@@ -23,6 +23,7 @@ Crowd::Crowd() {
     shader.linkProgram();
     
     ofVec3f c1, c2, c3, c4;
+
     c1.set(189,185,167);
     c2.set(17,16,33);
     c3.set(91,72,62);
@@ -160,6 +161,7 @@ void Crowd::draw(int _x, int _y) {
             glDisable(GL_BLEND);
             //shader.end();
 
+
                 
  */
 //            glDisable(GL_BLEND);
@@ -179,6 +181,7 @@ void Crowd::draw(int _x, int _y) {
       //     ofSetColor(colour[i]);
             //glBlendFunc(GL_ONE, GL_DST_COLOR);
           //  ofSetColor(colour[i].x, colour[i].y, colour[i].z,0.);
+
             frames[i].draw(0,0);
            // ofRect(0,0,frames[i].getWidth(),frames[i].getHeight());
         //    ofSetColor(255);

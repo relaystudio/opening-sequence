@@ -20,7 +20,6 @@ public:
     void loadDOF();
     int currentFbo;
 
-
     bool isActive();
     
     int lengthOfScene();
@@ -29,7 +28,6 @@ public:
     void update();
     void fadeIn();
     void fadeOut();
-    
     void draw(int _x, int _y);
     void draw();
     
@@ -40,6 +38,7 @@ public:
     void updateCrowd(vector<ofImage> * _crowd);
     void updateColours(vector<ofVec3f> * color);
 
+    
     
 private:
     bool bActiveShader;
@@ -52,5 +51,6 @@ private:
     ofFbo fbo[FBO_NUM];
     vector<ofVec2f> shaderVar;
     ofVideoPlayer video;
+
 };
 #endif

@@ -88,8 +88,7 @@ void Scene::draw(int _x, int _y) {
   //      shader.setUniformTexture("maskTex",fbo[0].getTextureReference(),1);
 //        fbo[0].draw(0,0);
         //        shader.end();
-    
-//          ofSetColor(255,255,255,fade);
+
         fbo[0].draw(0,0);
         
         //fbo[currentFbo].draw(0,0);
@@ -125,6 +124,7 @@ int Scene::lengthOfScene() {
 int Scene::getPosition() {
     return video.getCurrentFrame();
 }
+
 
 
 void Scene::drawDebug() {
