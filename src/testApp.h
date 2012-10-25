@@ -40,6 +40,8 @@ public:
     // Scene related
     void updateActiveScene();
     void transitionScene();
+    void updateTransition();
+    ofVideoPlayer trans;
     ofPolyline getContour(ofxCv::ContourFinder * _contourFinder);
     void cvStitch(cv::Mat& dst, ofImage * _k1, ofImage * _k2);
     
@@ -57,6 +59,7 @@ public:
     int numThresh;    
     vector<ofPolyline> contours;
     
+    bool transActive;
     float threshold;
     
     //Camera
@@ -84,6 +87,7 @@ public:
     ofImage stitched;
     ofVideoGrabber sanityTest;
     cv::Mat stitchedKinect;
+    cv::Mat bgSub;
     ofImage smallKinect;
     void cvClamp(cv::Mat& src, cv::Mat & dst, float lowerBound, float upperBound);
     void cvClamp(ofImage& src, float lowerBound, float upperBound);
@@ -101,16 +105,25 @@ public:
     
     void createGradient(ofImage * img, float low, float mid, float high);
     
-    Scene activeScene;
-    Scene newScene;
+    //Scene activeScene;
+    //Scene newScene;
     
+    Scene scene[2];
+    
+    int activeScene, newScene;
+    ofShader transShader;
     
     //Events
-
+    void makeNewScene();
+    void loadRandomTransition();
     void keyPressed(int key);
     
 private:
+    int panx, pany;
     float scaleFactor;
     ofImage distGradient;
+    cv::Mat gradientMat;
     bool gradientChanged;
+    bool transition;
+    float transFade;
 };

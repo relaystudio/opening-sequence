@@ -19,29 +19,38 @@ public:
     void drawRefraction();
     void loadDOF();
     int currentFbo;
-    ofShader shader;
-    ofShader refract;
-    ofFbo fbo[FBO_NUM];
-    int pong;
-    int fade;
-        
-    ofVideoPlayer video;
+
+
     bool isActive();
+    
+    int lengthOfScene();
+    int getPosition();
+    
     void update();
     void fadeIn();
     void fadeOut();
+    
     void draw(int _x, int _y);
     void draw();
+    
     void drawDebug();
     void reset();
+    
     void updateCrowd(vector<ofPolyline> * _layers);
     void updateCrowd(vector<ofImage> * _crowd);
-    
-    vector<ofVec2f> shaderVar;
+    void updateColours(vector<ofVec3f> * color);
+
     
 private:
     bool bActiveShader;
     bool bActive;
     Crowd crowd;
+    int pong;
+    float fade;
+    ofShader shader;
+    ofShader refract;
+    ofFbo fbo[FBO_NUM];
+    vector<ofVec2f> shaderVar;
+    ofVideoPlayer video;
 };
 #endif

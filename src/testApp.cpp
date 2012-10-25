@@ -12,17 +12,36 @@ void testApp::setup() {
         //ofDisableArbTex(); // YEAAA
     ofDisableLighting();
         //glEnable(GL_TEXTURE_2D);
+    setupPanel();
     setupCamera();
     setupType();
-    setupPanel();
     
-    activeScene = *new Scene();
-
-   // activeScene.loadVideo("movie/Camo_01_pjpeg.mov"); // Test
-                                                           //activeScene.loadShader("refraction"); // Test
+    string shader_program = "#version 120\n \
+    #extension GL_ARB_texture_rectangle: enable\n \
+    \
+    uniform sampler2DRect tex0;\
+    uniform sampler2DRect maskTex;\
+    \
+    void main(void) {\
+    vec2 pos = gl_TexCoord[0].st;\
+    vec3 src = texture2DRect(tex0,pos).rgb;\
+    float mask = texture2DRect(maskTex,pos).r;\
+    gl_FragColor = vec4( src, 1-mask);\
+    }";
     
-        newScene = *new Scene();
-   // newScene.loadVideo("movie/Camo_01_pjpeg.mov");
+    
+    transShader.setupShaderFromSource(GL_FRAGMENT_SHADER, shader_program);
+    transShader.linkProgram();
+    
+    
+    
+    transActive = false;
+    activeScene = 0;
+    newScene = 1;
+    
+    scene[activeScene] = *new Scene();
+    scene[activeScene].loadVideo("movie/Camo_01_pjpeg.mov");
+    makeNewScene();
    }
 
 void testApp::exit() {
@@ -41,6 +60,7 @@ void testApp::update() {
     updatePanel();
     updateConditional();
     updateCamera();
+    updateTransition();
     updateActiveScene();
     
     ranges.clear();
@@ -105,20 +125,36 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
         //  blur(stitched, 20);
     cv::Mat curThresh;
     cv::Mat curStitched;
-    
+//    curStitched = cv::Mat::zeros(curThresh.size(), curThresh.type());
     curStitched = toCv(stitched).clone();
         //copy(curStitched,curThresh);
+    cv::Mat compareMat;
     imitate(curThresh, curStitched);
+    imitate(compareMat, curStitched);
+    //background.update(curStitched, curThresh);
+    absdiff(curStitched, bgSub, compareMat);
+    max(curStitched, compareMat, curStitched);
+//    max(curStitched,bgSub,curStitched);
     clamped.clear();
+ //   blur(curStitched, panel.getValueI("cvBlur"));
+    
     for(int i=0;i<4;i++) {
-            //        imitate(curThresh,curStitched); 
-         cvClamp(curStitched, 
+            //        imitate(curThresh,curStitched);
+         curThresh = cv::Mat::ones(curThresh.size(), curThresh.type());
+         cvClamp(curStitched,
                  curThresh, 
                  _thresh->at(i).min, 
                  _thresh->at(i).max); // Output curThresh
 
-        
-        blur(curThresh, panel.getValueI("cvBlur"));
+        if(i==0)
+            blur(curThresh, abs(panel.getValueI("cvBlur")+20));
+        else if(i == 2)
+            blur(curThresh, panel.getValueI("cvBlur")+10);
+        else if(i == 3)
+            blur(curThresh, panel.getValueI("cvBlur")+20);
+        else
+            blur(curThresh, panel.getValueI("cvBlur"));
+           //
         ofxCv::toOf(curThresh, clamp[0]);
         clamp[0].reloadTexture();
         clamped.push_back(clamp[0]);
@@ -133,7 +169,9 @@ void testApp::getScene( cv::Mat * _frame, vector<Range> * _thresh) {
         ofPolyline theShape = getContour(&contourFinder);
         contours.push_back(theShape);*/
     }
-    activeScene.updateCrowd(&clamped);
+    scene[activeScene].updateCrowd(&clamped);
+    if(transActive)
+        scene[newScene].updateCrowd(&clamped);
         //ofLog() << "There are " << ofToString(contours.size()) << "Contours";
     //activeScene.updateCrowd(&contours);
 
@@ -167,31 +205,104 @@ ofPolyline testApp::getContour(ofxCv::ContourFinder * _contourFinder) {
 
 void testApp::draw() {
     glDisable(GL_DEPTH_TEST);
-    ofBackground(70, 70, 70);
+    //ofBackground(70, 70, 70);
+    ofBackground(0);
         //glEnable(GL_DEPTH_TEST);
     ofPushMatrix();
+    ofTranslate(panx,pany);
     ofScale(scaleFactor,scaleFactor);
-    ofSetColor(255,255,255);   
-    if(activeScene.isActive()) {
-        activeScene.draw();
-            //ofLog() << "Rendering scene";
+    //ofSetColor(255,255,255,255);
+
+    
+    glBlendFunc(GL_ONE, GL_ONE);
+    if(transActive) {
+        ofPushMatrix();
+            ofSetColor(255);
+            //glBlendFunc(GL_DST_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+          // transShader.begin();
+                //ofClear(0,0,0,0);;
+              //  transShader.setUniformTexture("maskTex",trans.getTextureReference(),1);
+        //glBlendEquation(GL_FUNC_ADD);
+       // glBlendFunc(GL_SRC_COLOR,GL_ONE);
+      
+        
+        //        Alpha Layer
+        glDisable(GL_BLEND);
+        glColorMask(1,1,1,1);
+        glColor4f(1.,1.,1.,1.);
+        trans.draw(0,0);
+        glColorMask(1,1,1,1);
+        glEnable(GL_BLEND);
+        
+        glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_DST_ALPHA);
+        scene[newScene].draw();
+        
+        //Might be glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+        glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_DST_ALPHA);
+        glColor4f(1.,1.,1.,1-transFade);
+        scene[activeScene].draw();
+        glColor4f(1.,1.,1.,1.);
+//        glDisable(GL_BLEND);
+//        trans.draw(0,0);
+//        glEnable(GL_BLEND);
+//        glBlendFunc(GL_DST_ALPHA, GL_DST_ALPHA);
+//        scene[activeScene].draw();
+//        
+
+//            transShader.printActiveAttributes();
+//            transShader.printActiveUniforms();
+           // transShader.end();
+       // glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        
+   /*    //glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glColorMask(1,1,1,0.0f);
+        trans.draw(0,0);
+        glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_DST_ALPHA);
+        scene[activeScene].draw();
+      //glBlendFuncSeparate(GL_SRC_ALPHA, GL_DST_COLOR, GL_ONE, GL_ONE);
+        glColorMask(1,1,1,1.0f);
+        glColor4f(1,1,1,1.0f);
+        scene[newScene].draw(); */
+
+        
+        
+        
+        
+        
+        
+//            glBlendFunc( GL_SRC_ALPHA, GL_DST_COLOR);
+//            glColor4f(1,1,1,1.0f);
+        
+           // scene[newScene].draw();
+        
+        ofPopMatrix();
     }
+    else {
+        scene[activeScene].draw(0,0);
+    }
+    glDisable(GL_BLEND);
+
+    ofPopMatrix();
+    
+    
     if(debug) {
         ofPushMatrix();
         stitched.draw(0,0);
-        activeScene.drawDebug();
+        scene[activeScene].drawDebug();
         
         ofTranslate(ofGetWidth()-200,0);
         ofSetColor(255);
         for(int i=0;i<4;i++) {
-            clamp[i].draw(0,i*100,200,100);
+            clamped[i].draw(0,i*100,200,100);
         }
-        
+        trans.draw(0,400,200,100);
+        ofTranslate(0,500);
+        ofScale(.1,.1);
+        scene[activeScene].draw();
+        ofTranslate(0,720);
+        scene[newScene].draw();
         ofPopMatrix();
     }
-    ofPopMatrix();
-    
-
     
     GLboolean isDepthTesting;
     glGetBooleanv(GL_DEPTH_TEST, &isDepthTesting);
@@ -228,10 +339,6 @@ void testApp::updateConditional() {
     if(panel.getValueB("horiz_flip")) fliph = 1.0;
     else fliph = 0;
     
-
-    if(panel.getValueB("vert_flip")) flipv = 1.0;
-    else flipv = 0;
-    
     if(panel.getValueB("transition")) {
         transitionScene();
         panel.setValueB("transition",false);
@@ -249,9 +356,9 @@ void testApp::setupPanel() {
     panel.addToggle("debug",true);
     panel.addToggle("transition", false);
     panel.addToggle("horiz_flip", false);
-    panel.addToggle("vert_flip", false);
     panel.addToggle("flipKinect", false);
     panel.addToggle("mirrorKinect", false);
+    panel.addToggle("subtractBG", false);
     panel.addSlider("cvBlur",40,0,80,true);
     
     panel.addLabel("Main Window");
@@ -337,6 +444,10 @@ void testApp::updatePanel() {
             kinect2.setCameraTiltAngle(angle);
     }
     
+    
+    panx = panel.getValueI("panX");
+    pany = panel.getValueI("panY");
+    
     if( panel.getValueB("changeGradient") ) 
     {
         createGradient(
@@ -345,6 +456,13 @@ void testApp::updatePanel() {
                        panel.getValueF("grad_mid"),
                        panel.getValueF("grad_high") );
         panel.setValueB("changeGradient", false);
+    }
+    
+    if( panel.getValueB("subtractBG")) {
+        imitate(bgSub,stitched);
+        //bgSub = cv::Mat::ones(bgSub.size(), bgSub.type());
+        bgSub = toCv(stitched).clone();
+        panel.setValueB("subtractBG",false);
     }
     
     for(int i=1;i<panel.getValueI("NumRanges")+1;i++) {
@@ -370,8 +488,11 @@ void testApp::setupCamera() {
     ofSetFrameRate(30);
     ofSetVerticalSync(true);
     
+    background.setLearningRate(900);
+    background.setThresholdValue(10);
+    
     angle = 0;
-    kinect.setRegistration(true);
+    kinect.setRegistration(false);
     ofLog() << "Starting first kinect";
     kinect.init(false, false, true); // infrared=false, video=true, texture=true
     kinect.open(0);
@@ -380,7 +501,7 @@ void testApp::setupCamera() {
     imitate(depthImg, kinect);
     
     //Second 
-    kinect2.setRegistration(true);
+    kinect2.setRegistration(false);
     ofLog() << "Starting second kinect";
     kinect2.init(false, false, true);
     kinect2.open(1);
@@ -442,8 +563,8 @@ void testApp::updateCamera() {
         }
         
         // Undistort that image via ofxCv + opencv
-        //calibration.undistort(toCv(depthImg));
-        //calibration.undistort(toCv(depthImg2));
+        calibration.undistort(toCv(depthImg));
+        calibration2.undistort(toCv(depthImg2));
         
         // Update the texture in the ofImage object
 //        depthImg.reloadTexture();
@@ -463,11 +584,30 @@ void testApp::updateCamera() {
             //imitate(stitched, kstitched);
             //ofxCv::copy(kstitched, stitched);
         
-            //cv::Mat resizedGrad; imitate(resizedGrad,kstitched); 
-        cv::Mat gradientMat; imitate(gradientMat, kstitched);
-        cv::Mat gradientMatRoi = gradientMat(cv::Rect(
-                                0,0,distGradient.width,distGradient.height));
-        toCv(distGradient).clone().copyTo(gradientMatRoi);
+            //cv::Mat resizedGrad; imitate(resizedGrad,kstitched);
+//        ofLog() << "Making the gradient";
+//
+//        
+//        ofLog() << "Copying to grad ROI";
+//
+//       
+//        ofLog() << "Cloning gradient to CV mat";
+        if(kstitched.cols != gradientMat.cols
+           || kstitched.rows != gradientMat.rows) {
+            imitate(distGradient,kstitched);
+            imitate(gradientMat, kstitched);
+            createGradient(&distGradient,
+                           panel.getValueF("grad_low"),
+                           panel.getValueF("grad_mid"),
+                           panel.getValueF("grad_high"));
+//            ofLog() << "Copying to gradient mat";
+            gradientMat = toCv(distGradient);
+        }
+//        ofLog() << "Adding gradientMat to stitched";
+    //    kstitched += gradientMat;
+        
+        
+        
         
             //        gradientMat = toCv(distGradient).clone();     
             // ofxCv::resize(gradientMat, resizedGrad); 
@@ -479,7 +619,8 @@ void testApp::updateCamera() {
             //        toCorrect += gradientMat;
             //        ofxCv::resize(toCorrect, stitchedMat, INTER_NEAREST);
             //        ofxCv::toOf(stitchedMat, stitched);
-
+        //ofLog() << "Imitate the stitched file";
+        imitate(stitched, kstitched);
         ofxCv::toOf(kstitched, stitched);
         stitched.update();
     }
@@ -572,40 +713,70 @@ void testApp::cvStitch(cv::Mat & dst, ofImage * _k1, ofImage * _k2) {
     }
     
     
-ofVec2f k1tl = ofVec2f(panel.getValueF("k1_tl_x"), panel.getValueF("k1_tl_y"));
-ofVec2f k1tr = ofVec2f(panel.getValueF("k1_tr_x"), panel.getValueF("k1_tr_y"));
-ofVec2f k1br = ofVec2f(panel.getValueF("k1_br_x"), panel.getValueF("k1_br_y"));
-ofVec2f k1bl = ofVec2f(panel.getValueF("k1_bl_x"), panel.getValueF("k1_bl_y"));
+    ofVec2f k1tl = ofVec2f(panel.getValueF("k1_tl_x"), panel.getValueF("k1_tl_y"));
+    ofVec2f k1tr = ofVec2f(panel.getValueF("k1_tr_x"), panel.getValueF("k1_tr_y"));
+    ofVec2f k1br = ofVec2f(panel.getValueF("k1_br_x"), panel.getValueF("k1_br_y"));
+    ofVec2f k1bl = ofVec2f(panel.getValueF("k1_bl_x"), panel.getValueF("k1_bl_y"));
+        
+    ofVec2f k2tl = ofVec2f(panel.getValueF("k2_tl_x"), panel.getValueF("k2_tl_y"));
+    ofVec2f k2tr = ofVec2f(panel.getValueF("k2_tr_x"), panel.getValueF("k2_tr_y")); 
+    ofVec2f k2br = ofVec2f(panel.getValueF("k2_br_x"), panel.getValueF("k2_br_y"));
+    ofVec2f k2bl = ofVec2f(panel.getValueF("k2_bl_x"), panel.getValueF("k2_bl_y"));  
+        
     
-ofVec2f k2tl = ofVec2f(panel.getValueF("k2_tl_x"), panel.getValueF("k2_tl_y"));
-ofVec2f k2tr = ofVec2f(panel.getValueF("k2_tr_x"), panel.getValueF("k2_tr_y")); 
-ofVec2f k2br = ofVec2f(panel.getValueF("k2_br_x"), panel.getValueF("k2_br_y"));
-ofVec2f k2bl = ofVec2f(panel.getValueF("k2_bl_x"), panel.getValueF("k2_bl_y"));  
+    //cv::Mat k1, k2;
+    cv::Mat k1orig, k2orig;
+//    copy(*_k1,k1);
+//    copy(*_k2,k2);
+       copy(*_k1,k1orig);
+       copy(*_k2,k2orig);
+    int crop = 100;
     
     
-    cv::Mat k1;
-    cv::Mat k2;
-    copy(*_k1,k1);
-    copy(*_k2,k2);
+//    cv::Mat k1, k2;
+//    k1.create(k1orig.rows-(crop*2), k1orig.cols-(crop*2), k1orig.type());
+//    imitate(k2,k1);
+//ofLog() << "Making ROIs";
+    cv::Mat k1roi(
+                  k1orig, cv::Rect(
+                             30,
+                             80,
+                             k1orig.cols-crop,
+                             k1orig.rows-crop));
+
+    cv::Mat k2roi(
+                  k2orig, cv::Rect(
+                             60,
+                             80,
+                             k2orig.cols-crop,
+                             k2orig.rows-crop));
+   // ofLog() << "Clone ROIs to k1/k2";
+    cv::Mat k1 = k1roi.clone();
+    cv::Mat k2 = k2roi.clone();
     
+//   k1roi.copyTo(k1);
+//   k2roi.copyTo(k2);
+     //   ofLog() << "Make stitched image";
     cv::Mat kstitch;
     kstitch.create(k1.rows,k1.cols+k2.cols,k1.type());
     
-    imitate(dst,kstitch);
-        //ofLog() << "Writing img to ROI";
+//       ofLog() << "Flip Image";
     if(flip) {
         
-        cv::Mat leftRoi = kstitch(cv::Rect(0+(int)k2offset.x,0+(int)k2offset.y,k2.cols-(int)k2crop,k2.rows));
-        cv::Mat rightRoi = kstitch(cv::Rect(k1.cols+(int)k1offset.x,0+(int)k1offset.y,k2.cols,k2.rows));
+        cv::Mat leftRoi = kstitch(cv::Rect(0,0,k2.cols,k2.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols,0,k1.cols,k1.rows));
         k1.copyTo(rightRoi);
         k2.copyTo(leftRoi);
     } else {
-        cv::Mat leftRoi = kstitch(cv::Rect(0+(int)k1offset.x,0+(int)k1offset.y,k2.cols+(int)k1crop,k2.rows));
-        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols-(int)k1crop,0,k1.cols,k1.rows));
+        cv::Mat leftRoi = kstitch(cv::Rect(0,0,k2.cols,k2.rows));
+        cv::Mat rightRoi = kstitch(cv::Rect(k2.cols,0,k1.cols,k1.rows));
         k1.copyTo(leftRoi);
         k2.copyTo(rightRoi);        
     }
-    dst = kstitch;
+        //ofLog() << "Copy image to destination";
+    ofxCv::copy(kstitch, dst);
+    
+//    dst = kstitch;
 }
 
 void testApp::setDebug(bool _debug) {
@@ -617,14 +788,175 @@ void testApp::setDebug(bool _debug) {
  *******************************************/
 
 void testApp::updateActiveScene() {
-    activeScene.update();
+    scene[activeScene].update();
+    
+    if(!transActive) {
+        
+        
+        
+        if(scene[activeScene].getPosition() >=
+           (scene[activeScene].lengthOfScene() - (trans.getTotalNumFrames()+200)))
+        {
+            ofLog() << "Transitioning scene!";
+            //transitionScene();
+            panel.setValueB("transition",true);
+        }
+    }
 }
 
 void testApp::transitionScene() {
-    activeScene.fadeOut();
-    activeScene = newScene;
-    activeScene.fadeIn();
-    newScene = *new Scene();
-    newScene.loadVideo("movie/Camo_01_pjpeg.mov");
+    
+    if(trans.isLoaded())
+        trans.setFrame(0);
+    else loadRandomTransition();
+    makeNewScene();
+    trans.setLoopState(OF_LOOP_NONE);
+    trans.setFrame(0);
+    trans.play();
+    transActive = true;
     ofLog() << "Transitioned scene";
+}
+
+void testApp::updateTransition() {
+    if(transActive) {
+        
+        trans.idleMovie();
+        scene[newScene].update();
+        //scene[activeScene].update();
+        
+        if(trans.getCurrentFrame() < trans.getTotalNumFrames()) {   
+//            ofLog() << "Transitioning "
+//            << ofToString(trans.getCurrentFrame())
+//            << " of " << ofToString(trans.getTotalNumFrames());
+            transFade = trans.getCurrentFrame() / trans.getTotalNumFrames();
+        } else {
+            if(activeScene == 1) {
+                newScene = 1; activeScene = 0;
+            } else {
+                newScene = 0; activeScene = 1;
+            }
+            ofLog() << "Finished transition";
+            transActive = false;
+            loadRandomTransition();
+        }
+    }
+}
+
+void testApp::loadRandomTransition() {
+    int random = ofRandom(1,4);
+    trans.close();
+    trans.loadMovie("trans/trans_0" + ofToString((int)random) + ".mov");
+    trans.stop();
+    ofLog() << "Loaded new movie " << ofToString(random);
+}
+
+void testApp::makeNewScene() {
+    int random = ofRandom(0,8);
+    vector<ofVec3f> colours;
+    colours.clear();
+    ofVec3f c1;
+    ofVec3f c2;
+    ofVec3f c3;
+    ofVec3f c4;
+    
+    switch(random) {
+            
+        case 0: // Black Fire
+            c1.set(255,255,255);
+            c2.set(255,255,255);
+            c3.set(255,255,255);
+            c4.set(255,255,255);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/black_fire_01.mov");
+            break;
+            
+        case 1: // Circles 2
+            c1.set(0,0,0);
+            c2.set(0,0,0);
+            c3.set(0,0,0);
+            c4.set(0,0,0);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/circles_03.mov");
+            break;
+            
+        case 2: // Floating Suits
+            c1.set(0,0,0);
+            c2.set(0,0,0);
+            c3.set(0,0,0);
+            c4.set(0,0,0);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/Floating_Suits.mov");
+            break;
+            
+        case 3: // Glitch 01
+            c1.set(255,255,255);
+            c2.set(255,255,255);
+            c3.set(255,255,255);
+            c4.set(255,255,255);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/glitch_01.mov");
+            break;
+            
+        case 4: // Smokte 02
+            c1.set(255,255,255);
+            c2.set(255,255,255);
+            c3.set(255,255,255);
+            c4.set(255,255,255);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/Smoke02Grey.mov");
+            break;
+            
+        case 5: // Union Jack 01
+            c1.set(0,0,0);
+            c2.set(248,54,55);
+            c3.set(3,0,93);
+            c4.set(255,255,255);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/unionjack_01.mov");
+            break;
+            
+        case 6: // Big Bang
+            c1.set(32,1,1);
+            c2.set(32,1,1);
+            c3.set(32,1,1);
+            c4.set(32,1,1);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/big_bang_02.mov");
+            break;
+
+        case 7: // Smoke 01 Gold
+            c1.set(0),0,0;
+            c2.set(36,7,6);
+            c3.set(228,158,0);
+            c4.set(0,0,0);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/Smoke01Gold.mov");
+            break;
+            
+            
+        case 8: // Camo
+            c1.set(189,185,167);
+            c2.set(17,16,33);
+            c3.set(91,72,62);
+            c4.set(54,107,85);
+            
+            scene[newScene] = *new Scene();
+            scene[newScene].loadVideo("movie/Camo01.mov");
+            break;   
+    }
+    
+    colours.push_back(c1);
+    colours.push_back(c2);
+    colours.push_back(c3);
+    colours.push_back(c4);
+    scene[newScene].updateColours(&colours);
+    
 }

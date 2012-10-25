@@ -26,7 +26,7 @@ public:
     void reset();
     vector<ofMesh> & getMeshes();
     ofTexture & getTextureReference();
-    
+    void updateColours( vector<ofVec3f> _colours);
 private:
     vector<ofPolyline> layers;
     vector<ofMesh> meshes;
@@ -38,7 +38,7 @@ private:
     
     bool bActive; // Active tracking
     bool active; // Facing object
-    
+    vector<ofVec3f> colour;
     ofFbo frame;
     
     ofVideoPlayer video;

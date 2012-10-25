@@ -14,6 +14,8 @@
 		2472D38C1631A83500D2E62D /* usb_libusb10.c in Sources */ = {isa = PBXBuildFile; fileRef = 2472D33C1631A83500D2E62D /* usb_libusb10.c */; };
 		2472D38D1631A83500D2E62D /* usb-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2472D3441631A83500D2E62D /* usb-1.0.a */; };
 		2472D38E1631A83500D2E62D /* ofxKinect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2472D37D1631A83500D2E62D /* ofxKinect.cpp */; };
+		2477B89E16330E960070F1E2 /* DOFLine.frag in Sources */ = {isa = PBXBuildFile; fileRef = 2477B89C16330E960070F1E2 /* DOFLine.frag */; };
+		2477B89F16330E960070F1E2 /* DOFLine.vert in Sources */ = {isa = PBXBuildFile; fileRef = 2477B89D16330E960070F1E2 /* DOFLine.vert */; };
 		24D094371630A0D7005C8E0E /* Calibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 24D093891630A0D5005C8E0E /* Calibration.cpp */; };
 		24D094381630A0D7005C8E0E /* ContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 24D0938A1630A0D5005C8E0E /* ContourFinder.cpp */; };
 		24D094391630A0D7005C8E0E /* Distance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 24D0938B1630A0D5005C8E0E /* Distance.cpp */; };
@@ -253,6 +255,8 @@
 		2472D37C1631A83500D2E62D /* ofxBase3DVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBase3DVideo.h; sourceTree = "<group>"; };
 		2472D37D1631A83500D2E62D /* ofxKinect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxKinect.cpp; sourceTree = "<group>"; };
 		2472D37E1631A83500D2E62D /* ofxKinect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxKinect.h; sourceTree = "<group>"; };
+		2477B89C16330E960070F1E2 /* DOFLine.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = DOFLine.frag; sourceTree = "<group>"; };
+		2477B89D16330E960070F1E2 /* DOFLine.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = DOFLine.vert; sourceTree = "<group>"; };
 		24D0937F1630A0D5005C8E0E /* Calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Calibration.h; sourceTree = "<group>"; };
 		24D093801630A0D5005C8E0E /* ContourFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContourFinder.h; sourceTree = "<group>"; };
 		24D093811630A0D5005C8E0E /* Distance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Distance.h; sourceTree = "<group>"; };
@@ -566,7 +570,7 @@
 		83A432281620AE030019083F /* shader1.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = shader1.vert; sourceTree = "<group>"; };
 		83A4322E162133FF0019083F /* grayscott.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = grayscott.frag; sourceTree = "<group>"; };
 		83A4322F162134000019083F /* grayscott.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = grayscott.vert; sourceTree = "<group>"; };
-		83A43232162135680019083F /* water.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = water.frag; sourceTree = "<group>"; };
+		83A43232162135680019083F /* water.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = water.frag; sourceTree = "<group>"; };
 		83A43233162135680019083F /* water.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = water.vert; sourceTree = "<group>"; };
 		83EFA24C15C6CF810008E6EF /* Raleway-Thin.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Raleway-Thin.ttf"; sourceTree = "<group>"; };
 		83EFA24D15C6CF810008E6EF /* settings.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = settings.xml; sourceTree = "<group>"; };
@@ -1459,6 +1463,8 @@
 		83A432231620AE030019083F /* shader */ = {
 			isa = PBXGroup;
 			children = (
+				2477B89C16330E960070F1E2 /* DOFLine.frag */,
+				2477B89D16330E960070F1E2 /* DOFLine.vert */,
 				83A43232162135680019083F /* water.frag */,
 				83A43233162135680019083F /* water.vert */,
 				83A4322E162133FF0019083F /* grayscott.frag */,
@@ -1730,6 +1736,8 @@
 				2472D38B1631A83500D2E62D /* tilt.c in Sources */,
 				2472D38C1631A83500D2E62D /* usb_libusb10.c in Sources */,
 				2472D38E1631A83500D2E62D /* ofxKinect.cpp in Sources */,
+				2477B89E16330E960070F1E2 /* DOFLine.frag in Sources */,
+				2477B89F16330E960070F1E2 /* DOFLine.vert in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
