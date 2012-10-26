@@ -362,6 +362,7 @@ void testApp::updateConditional() {
         panel.setValueB("transition",false);
     }
     
+    
 }
 
 void testApp::setupPanel() {
@@ -373,6 +374,8 @@ void testApp::setupPanel() {
     panel.addLabel("Debug switches");
     panel.addToggle("debug",true);
     panel.addToggle("transition", false);
+    panel.addToggle("transSpecific", false);
+    panel.addSlider("scene",0,0,8,true);
     panel.addToggle("horiz_flip", false);
     panel.addToggle("flipKinect", false);
     panel.addToggle("mirrorKinect", false);
@@ -815,7 +818,7 @@ void testApp::updateActiveScene() {
         
         
         if(scene[activeScene].getPosition() >=
-           (scene[activeScene].lengthOfScene() - (trans.getTotalNumFrames()+200)))
+           (scene[activeScene].lengthOfScene() - (trans.getTotalNumFrames()+200)) || scene[activeScene].getPosition() == 5400)
         {
             ofLog() << "Transitioning scene!";
             //transitionScene();
@@ -873,8 +876,8 @@ void testApp::loadRandomTransition() {
     ofLog() << "Loaded new movie " << ofToString(random);
 }
 
-void testApp::makeNewScene() {
-    int random = ofRandom(0,8);
+
+void testApp::makeNewScene(int sceneNum) {
     vector<ofVec3f> colours;
     colours.clear();
     ofVec3f c1;
@@ -882,7 +885,7 @@ void testApp::makeNewScene() {
     ofVec3f c3;
     ofVec3f c4;
     
-    switch(random) {
+    switch(sceneNum) {
             
         case 0: // Black Fire
             c1.set(255,255,255);
@@ -895,10 +898,10 @@ void testApp::makeNewScene() {
             break;
             
         case 1: // Circles 2
-            c1.set(0,0,0);
-            c2.set(0,0,0);
-            c3.set(0,0,0);
-            c4.set(0,0,0);
+            c1.set(.68*255,.95*255,.62*255);
+            c2.set(.68*255,.18*255,.62*255);
+            c3.set(.89*255,.38*255,0.);
+            c4.set( 0,.57*255,.86*255);
             
             scene[newScene] = *new Scene();
             scene[newScene].loadVideo("movie/circles_03.mov");
@@ -906,25 +909,16 @@ void testApp::makeNewScene() {
             
         case 2: // Floating Suits
             c1.set(0,0,0);
-            c2.set(0,0,0);
-            c3.set(0,0,0);
+            c2.set(36,7,6);
+            c3.set(228,158,0);
             c4.set(0,0,0);
             
             scene[newScene] = *new Scene();
             scene[newScene].loadVideo("movie/Floating_Suits.mov");
             break;
             
-        case 3: // Glitch 01
-            c1.set(255,255,255);
-            c2.set(255,255,255);
-            c3.set(255,255,255);
-            c4.set(255,255,255);
             
-            scene[newScene] = *new Scene();
-            scene[newScene].loadVideo("movie/glitch_01.mov");
-            break;
-            
-        case 4: // Smokte 02
+        case 3: // Smokte 02
             c1.set(255,255,255);
             c2.set(255,255,255);
             c3.set(255,255,255);
@@ -934,7 +928,7 @@ void testApp::makeNewScene() {
             scene[newScene].loadVideo("movie/Smoke02Grey.mov");
             break;
             
-        case 5: // Union Jack 01
+        case 4: // Union Jack 01
             c1.set(0,0,0);
             c2.set(248,54,55);
             c3.set(3,0,93);
@@ -944,7 +938,7 @@ void testApp::makeNewScene() {
             scene[newScene].loadVideo("movie/unionjack_01.mov");
             break;
             
-        case 6: // Big Bang
+        case 5: // Big Bang
             c1.set(32,1,1);
             c2.set(32,1,1);
             c3.set(32,1,1);
@@ -954,8 +948,8 @@ void testApp::makeNewScene() {
             scene[newScene].loadVideo("movie/big_bang_02.mov");
             break;
 
-        case 7: // Smoke 01 Gold
-            c1.set(0),0,0;
+        case 6: // Smoke 01 Gold
+            c1.set(0,0,0);
             c2.set(36,7,6);
             c3.set(228,158,0);
             c4.set(0,0,0);
@@ -965,7 +959,7 @@ void testApp::makeNewScene() {
             break;
             
             
-        case 8: // Camo
+        case 7: // Camo
             c1.set(189,185,167);
             c2.set(17,16,33);
             c3.set(91,72,62);
@@ -982,4 +976,10 @@ void testApp::makeNewScene() {
     colours.push_back(c4);
     scene[newScene].updateColours(&colours);
     
+}
+
+
+void testApp::makeNewScene() {
+//    makeNewScene(7);
+    makeNewScene(ofRandom(0,7));
 }

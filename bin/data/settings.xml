@@ -1,5 +1,5 @@
 <debug>
-    <val_0>1.000000000</val_0>
+    <val_0>0.000000000</val_0>
 </debug>
 <horiz_flip>
     <val_0>0.000000000</val_0>
@@ -14,7 +14,7 @@
     <val_0>1.000000000</val_0>
 </mirrorKinect>
 <scaleFactor>
-    <val_0>0.646222234</val_0>
+    <val_0>1.000000000</val_0>
 </scaleFactor>
 <scaleTop>
     <val_0>1.000000000</val_0>
@@ -161,5 +161,11 @@
     <val_0>0.000000000</val_0>
 </subtractBG>
 <cvBlur>
-    <val_0>25.777778625</val_0>
+    <val_0>6.222222328</val_0>
 </cvBlur>
+<transSpecific>
+    <val_0>0.000000000</val_0>
+</transSpecific>
+<scene>
+    <val_0>0.000000000</val_0>
+</scene>

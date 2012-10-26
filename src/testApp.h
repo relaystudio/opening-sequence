@@ -114,6 +114,7 @@ public:
     ofShader transShader;
     
     //Events
+    void makeNewScene(int sceneNum);
     void makeNewScene();
     void loadRandomTransition();
     void keyPressed(int key);
